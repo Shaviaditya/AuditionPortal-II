@@ -7,12 +7,15 @@ const session = require('express-session')
 let app = express();
 const { sequelize } = require('./models');
 require('dotenv').config();
+let { DataTypes } = require('sequelize');
+const roundModel = require('./models/roundmodel')(sequelize, DataTypes)
+const questionSet = require('./models/question_set_model')(sequelize, DataTypes)
 let PORT = process.env.PORT;
 
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({ secret: 'my secret', cookie: { maxAge : 1200000 } })); 
+app.use(session({ secret: 'my secret', cookie: { maxAge: 1200000 } }));
 app.use(passport.initialize())
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -20,6 +23,33 @@ app.use(bodyParser.json())
 //Routes
 require('./routes/authRoutes')(app, passport)
 
+app.post('/setRound', async (req, res) => {
+    try {
+        const { round, time, quesText, quesLink, quesType, options, score} = req.body;
+        await roundModel.create({
+            roundNo: round,
+            time: time,
+        });
+        const quiz = await questionSet.create({
+            roundId: round,
+            quesText: quesText,
+            quesLink: quesLink,
+            quesType: quesType,
+            options: options,
+            score: score,
+        });
+        res.status(201).json(quiz);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json(err);
+    }
+
+})
+
+app.get('/getrounds', async (req, res) => {
+    const rounds = await roundModel.findAll({ include: ['quiz'] });
+    res.status(201).json(rounds);
+})
 
 //server call
 app.listen(PORT, async () => {
