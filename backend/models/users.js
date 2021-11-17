@@ -1,18 +1,7 @@
-'use strict';
-const { Model, UUIDV4 } = require('sequelize');
+const { Sequelize , UUIDV4, DataTypes } = require("sequelize");
 var bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
-  class users extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
-  };
-  users.init({
+  const users = sequelize.define('users', {
     uuid: {
       type: DataTypes.UUID,
       defaultValue: UUIDV4
@@ -46,13 +35,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
       defaultValue: "normal"
-    },
-  },
-    {
-      sequelize,
-      modelName: 'users',
     }
-  );
+  });
   users.createUser = async (newUser) => {
     bcrypt.genSalt(10, async (err, salt) => {
       bcrypt.hash(newUser.password, salt, async (err, hash) => {
@@ -79,5 +63,4 @@ module.exports = (sequelize, DataTypes) => {
     })
   }
   return users;
-
-};
+}

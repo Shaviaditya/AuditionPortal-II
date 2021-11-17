@@ -1,9 +1,9 @@
 const { sequelize } = require('../models');
 let { DataTypes } = require('sequelize');
-const users = require('../models/users')(sequelize, DataTypes)
+// const users = require('../models/users')(sequelize, DataTypes)
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
+const {models: {users}} = sequelize;
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
