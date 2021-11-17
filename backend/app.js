@@ -29,9 +29,15 @@ const {
     }
 } = sequelize;
 
+const isLoggedIn = (req,res,next) => {
+    if(req.user){
+        next();
+    } else {
+        res.status(401).send("Not logged In");
+    }
+}
 
-/*
-app.post('/setRound', async (req, res) => {
+app.post('/setRound', isLoggedIn ,async (req, res) => {
     try {
         const { round, time, quesText, quesLink, quesType, options, score } = req.body;
         await roundmodel.create({
@@ -54,11 +60,10 @@ app.post('/setRound', async (req, res) => {
 
 })
 
-app.get('/getrounds', async (req, res) => {
+app.get('/getrounds', isLoggedIn ,async (req, res) => {
     const rounds = await roundmodel.findAll({ include: [{ model: question_set_model }] });
     res.status(201).json(rounds);
 })
-*/
 
 
 //server call

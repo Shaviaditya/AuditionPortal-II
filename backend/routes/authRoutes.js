@@ -71,6 +71,7 @@ module.exports = (app, passport) => {
     })
 
     app.get("/auth/logout", (req, res) => {
+        req.session = null;
         req.logout();
         res.send("Logged out successfully");
     });
