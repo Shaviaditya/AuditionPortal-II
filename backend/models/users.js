@@ -1,18 +1,7 @@
-'use strict';
-const { Model, UUIDV4 } = require('sequelize');
+const { Sequelize , UUIDV4, DataTypes } = require("sequelize");
 var bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
-  class users extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
-  };
-  users.init({
+  const users = sequelize.define('users', {
     uuid: {
       type: DataTypes.UUID,
       defaultValue: UUIDV4
@@ -46,13 +35,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
       defaultValue: "normal"
-    },
-  },
-    {
-      sequelize,
-      modelName: 'users',
     }
-  );
+  });
   users.createUser = async (newUser) => {
     bcrypt.genSalt(10, async (err, salt) => {
       bcrypt.hash(newUser.password, salt, async (err, hash) => {
@@ -67,7 +51,13 @@ module.exports = (sequelize, DataTypes) => {
     return newUser;
   }
   users.getUserById = async (_id) => {
-    return await users.findOne({ where: { id: _id } }) 
+    let param1 = _id.id, param2 = _id.uuid;
+    if(param1!=undefined && param2!=undefined)
+      return await users.findOne({ where: { uuid: ((param1.length>param2.length)?(param1):(param2)) } })
+    else if(param1!=undefined && param2==undefined)
+      return await users.findOne({ where: { uuid: param1 } })
+    else 
+      return await users.findOne({ where: { uuid: param2 } })
   }
   users.getUserByEmail = async (_email) => {
     return await users.findOne({ where: { email: _email } })
@@ -79,5 +69,4 @@ module.exports = (sequelize, DataTypes) => {
     })
   }
   return users;
-
-};
+}

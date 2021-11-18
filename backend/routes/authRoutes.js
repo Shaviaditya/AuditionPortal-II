@@ -1,9 +1,10 @@
 const { sequelize } = require('../models');
 let { DataTypes } = require('sequelize');
-const users = require('../models/users')(sequelize, DataTypes)
+const express = require('express');
+// const users = require('../models/users')(sequelize, DataTypes)
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
+const {models: {users}} = sequelize;
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
@@ -35,22 +36,25 @@ module.exports = (app, passport) => {
                     }
                     if (ans) {
                         const payload = {
-                            id: data.uuid,
+                            uuid: data.uuid,
                             username: data.username,
                             email: data.email,
                             role: data.role,
+                            clearance: data.clearance
                         };
                         console.log(JSON.stringify(payload));
                         let token = jwt.sign(payload, process.env.SECRET, {
                             expiresIn: 600000,
                         });
                         if (data.role === "m" || data.role === "su") {
+                            res.cookie('jwt',token);
                             res.json({
                                 success: true,
                                 token: "Bearer " + token,
                                 admin: data.username,
                             });
                         } else {
+                            res.cookie('jwt',token);
                             res.json({
                                 success: true,
                                 token: "Bearer " + token,
@@ -71,7 +75,14 @@ module.exports = (app, passport) => {
     })
 
     app.get("/auth/logout", (req, res) => {
+        req.session = null;
         req.logout();
+        res.status(200).clearCookie('connect.sid', {
+            path: '/'
+        });
+        res.status(200).clearCookie('jwt', {
+            path: '/'
+        });
         res.send("Logged out successfully");
     });
 
@@ -90,7 +101,11 @@ module.exports = (app, passport) => {
                 clearance: req.user.clearance
             };
             var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
-            return res.status(201).json(payload)
+            res.cookie('jwt',token);
+            res.status(201).json({
+                success: true,
+                token: "Bearer " + token,
+            });
         });
     app.get("/auth/github", passport.authenticate("github"));
 

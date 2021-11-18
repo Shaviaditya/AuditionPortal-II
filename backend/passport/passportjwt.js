@@ -1,19 +1,23 @@
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-
 const { sequelize } = require('../models');
 let {DataTypes} = require('sequelize');
-const User = require('../models/users')(sequelize, DataTypes)
-
+// const User = require('../models/users')(sequelize, DataTypes)
+const models = require('../models');
+const  { models : { users }} = sequelize;
 require('dotenv').config();
-
+var cookieExtractor = function(req) {
+    var token = null;
+    if (req && req.cookies) token = req.cookies['jwt'];
+    return token;
+  };
 module.exports = function (passport) {
     let opts = {};
-    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+    opts.jwtFromRequest = cookieExtractor;
     //opts.secretOrKey = 'GLUGAUDITION2021';
     opts.secretOrKey = process.env.SECRET;
     passport.use(new JwtStrategy(opts, (jwt_payload, callback) => {
-        User.getUserById(jwt_payload.id).then((data,err) => {
+        users.getUserById(jwt_payload).then((data,err) => {
             if (err) {
                 return callback(err, false);
             }
@@ -27,11 +31,15 @@ module.exports = function (passport) {
 
 
     passport.serializeUser((user, done) => {
-        done(null, user.id);
+        users.getUserById(user).then((data) => {
+            console.log(user);
+            done(null, data);
+        })
     })
 
-    passport.deserializeUser((id, done) => {
-        User.getUserById(id).then((user) => {
+    passport.deserializeUser((user, done) => {
+        users.getUserById(user).then((user) => {
+            console.log(user);
             done(null, user);
 
         })
