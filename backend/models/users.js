@@ -51,7 +51,13 @@ module.exports = (sequelize, DataTypes) => {
     return newUser;
   }
   users.getUserById = async (_id) => {
-    return await users.findOne({ where: { id: _id } }) 
+    let param1 = _id.id, param2 = _id.uuid;
+    if(param1!=undefined && param2!=undefined)
+      return await users.findOne({ where: { uuid: ((param1.length>param2.length)?(param1):(param2)) } })
+    else if(param1!=undefined && param2==undefined)
+      return await users.findOne({ where: { uuid: param1 } })
+    else 
+      return await users.findOne({ where: { uuid: param2 } })
   }
   users.getUserByEmail = async (_email) => {
     return await users.findOne({ where: { email: _email } })

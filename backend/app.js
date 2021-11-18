@@ -1,7 +1,5 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const passport = require('passport');
-const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 let app = express();
@@ -9,7 +7,7 @@ const models = require('./models/index')
 const { sequelize } = require('./models');
 require('dotenv').config();
 let PORT = process.env.PORT;
-
+const isLoggedIn = require('./middleware/authorization');
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -21,21 +19,13 @@ app.use(express.json())
 
 //Routes
 require('./routes/authRoutes')(app, passport)
-
+require('./routes/roundRoutes')(app,passport)
 const {
     models: {
         question_set_model,
         roundmodel
     }
 } = sequelize;
-
-const isLoggedIn = (req,res,next) => {
-    if(req.user){
-        next();
-    } else {
-        res.status(401).send("Not logged In");
-    }
-}
 
 app.post('/setRound', isLoggedIn ,async (req, res) => {
     try {
@@ -59,8 +49,9 @@ app.post('/setRound', isLoggedIn ,async (req, res) => {
     }
 
 })
-
-app.get('/getrounds', isLoggedIn ,async (req, res) => {
+console.log(passport.authenticate("jwt",{session: false}));
+app.get('/getrounds', passport.authenticate("jwt",{session: false}) ,async (req, res) => {
+    console.log(req.user);
     const rounds = await roundmodel.findAll({ include: [{ model: question_set_model }] });
     res.status(201).json(rounds);
 })
