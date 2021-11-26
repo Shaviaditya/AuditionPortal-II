@@ -1,5 +1,4 @@
 const { sequelize } = require('../models');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { models: { users, roundmodel, question_set_model } } = sequelize;
 

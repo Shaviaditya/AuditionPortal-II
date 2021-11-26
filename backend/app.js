@@ -17,15 +17,20 @@ app.use(passport.session());
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
+app.get('/',(req,res)=> {
+    res.status(200).json({Welcome : user});
+})
+
+
 //Routes
 require('./routes/authRoutes')(app, passport)
 require('./routes/roundRoutes')(app,passport)
-const {
-    models: {
-        question_set_model,
-        roundmodel
-    }
-} = sequelize;
+// const {
+//     models: {
+//         question_set_model,
+//         roundmodel
+//     }
+// } = sequelize;
 
 //server call
 models.sequelize.sync().then(() => {
