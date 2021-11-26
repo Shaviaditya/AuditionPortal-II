@@ -17,45 +17,20 @@ app.use(passport.session());
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
+app.get('/',(req,res)=> {
+    res.status(200).json({Welcome : user});
+})
+
+
 //Routes
 require('./routes/authRoutes')(app, passport)
 require('./routes/roundRoutes')(app,passport)
-const {
-    models: {
-        question_set_model,
-        roundmodel
-    }
-} = sequelize;
-
-app.post('/setRound', isLoggedIn ,async (req, res) => {
-    try {
-        const { round, time, quesText, quesLink, quesType, options, score } = req.body;
-        await roundmodel.create({
-            roundNo: round,
-            time: time,
-        });
-        const quiz = await question_set_model.create({
-            roundId: round,
-            quesText: quesText,
-            quesLink: quesLink,
-            quesType: quesType,
-            options: options,
-            score: score,
-        });
-        res.status(201).json(quiz);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json(err);
-    }
-
-})
-console.log(passport.authenticate("jwt",{session: false}));
-app.get('/getrounds', passport.authenticate("jwt",{session: false}) ,async (req, res) => {
-    console.log(req.user);
-    const rounds = await roundmodel.findAll({ include: [{ model: question_set_model }] });
-    res.status(201).json(rounds);
-})
-
+// const {
+//     models: {
+//         question_set_model,
+//         roundmodel
+//     }
+// } = sequelize;
 
 //server call
 models.sequelize.sync().then(() => {
