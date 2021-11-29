@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const { Sequelize } = require('sequelize');
-const { default: answermodel } = require('./answermodel');
-const { default: question_answered_model } = require('./question_answered_model');
+// const { default: answermodel } = require('./answermodel');
+// const { default: question_answered_model } = require('./question_answered_model');
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 
@@ -12,7 +12,7 @@ const models = [
   require('./roundmodel')(sequelize, Sequelize.DataTypes),
   require('./question_set_model')(sequelize, Sequelize.DataTypes),
   require('./eventmodel')(sequelize, Sequelize.DataTypes),
-  require('./question_answered_model').default(sequelize, Sequelize.DataTypes),
+  require('./question_answered_model')(sequelize, Sequelize.DataTypes),
   require('./answermodel')(sequelize, Sequelize.DataTypes),
   require('./dashmodel')(sequelize, Sequelize.DataTypes)
 ]

@@ -29,10 +29,10 @@ module.exports = (sequelize, DataTypes) => {
 };
 */
 
-import { DataTypes } from "sequelize/types";
-import { sequelize } from ".";
+// import { DataTypes } from "sequelize/types";
+// import { sequelize } from ".";
 
-export default (sequelize, DataTypes) => {
+module.exports = (sequelize, DataTypes) => {
   const answermodel = sequelize.define('answermodel', {
     roundNo: {
       type: DataTypes.INTEGER,
