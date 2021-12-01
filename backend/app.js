@@ -25,6 +25,8 @@ app.get('/',(req,res)=> {
 //Routes
 require('./routes/authRoutes')(app, passport)
 require('./routes/roundRoutes')(app,passport)
+require('./routes/eventLogger')(app)
+require('./routes/manangeRoutes')(app, passport)
 // const {
 //     models: {
 //         question_set_model,
