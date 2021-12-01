@@ -1,4 +1,6 @@
-const { sequelize } = require('../models');
+const { sequelize, models } = require('../models/index');
+// const { sequelize} = require('sequelize')
+// const {eventlogger} = require('./eventLogger');
 require('dotenv').config();
 const { models: { users, roundmodel, question_set_model } } = sequelize;
 
@@ -7,6 +9,7 @@ module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
     require("../passport/passportgithub")(passport);
+    require("./eventLogger")(app)
     // Round Routes
     const authWall = passport.authenticate("jwt", { session: false });
 
@@ -30,14 +33,14 @@ module.exports = (app, passport) => {
                 score: score,
             })
             await roundmodel.findOne({where:{roundNo: presetRounds+1},  include: [{ model: question_set_model }]}).then((doc) => {
-                if(doc){
-                    return res.status(201).json(doc);
+                if(eventlogger(req.user, `added Round ${total + 1}`)){
+                    return res.status(201).json({success: true});
                 } else {
                     return res.status(400).json({success: false})
                 }
             })
         } else {
-            return res.status(500);
+            return res.status(401);
         }
     })
 

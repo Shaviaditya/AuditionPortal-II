@@ -44,9 +44,9 @@ module.exports = (sequelize, DataTypes) => {
 };
 */
 
-import { sequelize } from ".";
+// import { sequelize } from ".";
 
-export default (sequelize, DataTypes) => {
+module.exports = (sequelize, DataTypes) => {
   const question_answered_model = sequelize.define("question_answered_model", {
     connectID : {
       type: DataTypes.STRING,
