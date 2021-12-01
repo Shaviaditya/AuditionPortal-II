@@ -105,9 +105,6 @@ module.exports = (app, passport) => {
                             res.sendStatus(500)
                     })
                 })
-                // DashModel.replaceOne({ _id: req.body._id }, a).then((doc) => {
-
-                // });
             } else {
                 return res.sendStatus(401);
             }
