@@ -48,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
 
 module.exports = (sequelize, DataTypes) => {
   const question_answered_model = sequelize.define("question_answered_model", {
-    connectID : {
+    answermodelId : {
       type: DataTypes.STRING,
       allowNull: false
     },
