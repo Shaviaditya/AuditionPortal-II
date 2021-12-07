@@ -1,13 +1,17 @@
 const { sequelize } = require('../models');
 const fs = require('fs');
 const path = require('path');
-const roundmodel = require('../models/roundmodel');
+// const roundmodel = require('../models/roundmodel');
+const eventlogger = require('./eventLogger')
+const sendMail = require('../services/reportSender')
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 require('dotenv').config();
 const {
     models:
     {
         users,
-        dashmodel
+        dashmodel,
+        roundmodel
     }
 } = sequelize;
 module.exports = (app, passport) => {
