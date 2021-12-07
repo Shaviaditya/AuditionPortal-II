@@ -1,3 +1,4 @@
+// Tested all routes 
 const { user } = require('pg/lib/defaults');
 const eventlogger = require('./eventLogger')
 const { sequelize } = require('../models');
@@ -72,7 +73,7 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m" && req.user.clearance >= a.round)
             ) {
-                const entry = await dashmodel.findOne({ where: { uuid: req.body.uuid } })
+                const entry = await dashmodel.findOne({ where: { uid: req.body.uid } })
                 entry.status = a.status
                 entry.save().then(() => {
                     if (eventlogger(req.user, `Changed selection status for ${a.name} to ${a.status}`))
@@ -95,10 +96,22 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m")
             ) {
-                const entry = await dashmodel.findOne({ where: { uuid: req.body.uuid } })
-                entry.feedback.push(req.body.feedback);
+                const entry = await dashmodel.findOne({ where: { uid: req.body.uuid } })
+                if(entry.feedback.length == 0){
+                    let arr = []
+                    arr.push(req.body.feedback);
+                    entry.feedback = arr;
+                } else { 
+                    let arr = [];
+                    entry.feedback.forEach(el => {
+                        arr.push(el);
+                    })
+                    arr.push(req.body.feedback);
+                    entry.feedback = arr;
+                }
+                // console.log(entry.feedback);
                 entry.save().then(() => {
-                    if (eventlogger(req.user, `Added feedback for ${req.body.name}`))
+                    if (eventlogger(req.user, `Added feedback for ${entry.name}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });

@@ -35,10 +35,10 @@ module.exports = (app, passport) => {
                 const userDetails = await users.getUserById(req.body)
                 userDetails.role = role;
                 await userDetails.save();
-                const details = await dashmodel.findOne({ where: { uuid: req.body.uuid } });
+                const details = await dashmodel.findOne({ where: { uid: req.body.uuid } });
                 details.role = role;
                 details.save();
-                console.log(dash)
+                console.log(details)
                 if (eventlogger(req.user, `changed the role for ${details.name} to ${role}`))
                     res.sendStatus(201).json({ success: "true" });
                 else
@@ -159,7 +159,7 @@ module.exports = (app, passport) => {
                                     else
                                         kid.time += 600000;
                                     console.log(kid)
-                                    const kidDash = await dashmodel.findOne({ where: { uid: kid.uuid } });
+                                    const kidDash = await dashmodel.findOne({ where: { uid: kid.uid } });
                                     if (kidDash.time < (new Date().getTime()))
                                         kidDash.time = new Date().getTime() + 600000 + 2000;
                                     else
