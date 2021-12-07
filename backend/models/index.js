@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
-const { Sequelize } = require('sequelize');
+const { DataTypes } = require('sequelize');
+// const { Sequelize } = require('sequelize');
 // const { default: answermodel } = require('./answermodel');
 // const { default: question_answered_model } = require('./question_answered_model');
 const env = process.env.NODE_ENV || 'development';
@@ -29,34 +30,38 @@ const {
 try {
   // Round Models => Questions Set Model (Each Round can have multiple questions of multiple types)
   roundmodel.hasMany(question_set_model, {
-    foreignKey: 'roundId',
-    allowNull: false,
+    foreignKey: {
+      type: DataTypes.UUID,
+      allowNull: false
+    }
   })
-  question_set_model.belongsTo(roundmodel, { foreignKey: 'roundId' })
+  question_set_model.belongsTo(roundmodel,{constraints: true})
 } catch (err) {
   console.log(err);
 }
+
 // Answer Model => Question-Answer Models Connection (Each Student can answer multiple questions so to store his responses round wise)
 try {
   answermodel.hasMany(question_answered_model, {
-    foreignKey: 'connectID',
-    allowNull: false,
+    foreignKey: {
+      allowNull: false
+    }
   })
-  question_answered_model.belongsTo(answermodel, { foreignKey: 'connectID' })
+  question_answered_model.belongsTo(answermodel)
 } catch (error) {
   console.log(error)
 }
 // Dash Model => Answer Model Connection (Each Student can answer multiple questions so to store his responses round wise)
 try {
   dashmodel.hasMany(answermodel, {
-    foreignKey: 'connectID2',
-    allowNull: false,
+    foreignKey: {
+      allowNull: false
+    }
   })
-  answermodel.belongsTo(dashmodel, { foreignKey: 'connectID2' })
+  answermodel.belongsTo(dashmodel)
 } catch (error) {
   console.log(error)
 }
 
 models.sequelize = sequelize;
-
 module.exports = models;

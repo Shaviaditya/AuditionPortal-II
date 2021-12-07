@@ -11,22 +11,25 @@ module.exports = (app, passport) => {
     require("../passport/passportgithub")(passport);
     app.post('/auth/signup', async (req, res) => {
         const { username, email, password, role } = req.body;
-        const details = await users.create({ username, email, password, role })
-        await users.createUser(details, async (err, user) => {
-            if (err) {
-                res.json({ success: false, message: "User is not registered.." });
-            } else {
-                if (user.role === "s") {
-                    await dashmodel.create({
-                        uid: user.uuid,
-                        name: user.username,
-                        email: user.email
-                    });
+        await users.create({ username, email, password, role })
+            .then(async (details) => {
+                await users.createUser(details).then( async (user) => {
+                    if (!user) {
+                        return res.json({ success: false, message: "User is not registered.." });
+                    } else {
+                        if (user.role === "s") {
+                            await dashmodel.create({
+                                uid: user.uuid,
+                                name: user.username,
+                                email: user.email
+                            });
 
-                }
-                res.json({ success: true, message: "User is registered.." });
-            }
-        })
+                        }
+                        return res.json({ success: true, message: "User is registered.." });
+                    }
+                })
+            })
+        // console.log(details);
         // .then((data) => {
         //     try {
         //         return res.status(201).json(data)
@@ -40,7 +43,7 @@ module.exports = (app, passport) => {
 
     app.post('/auth/login', async (req, res) => {
         const { email, password } = req.body;
-        console.log(`Yay! we have email & password ${email} & ${password}`);
+        // console.log(`Yay! we have email & password ${email} & ${password}`);
         users.getUserByEmail(email).then((data) => {
             try {
                 users.comparePassword(password, data.password, function (err, ans) {
@@ -116,7 +119,7 @@ module.exports = (app, passport) => {
             };
             var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
             res.cookie('jwt', token);
-            dashmodel.findOne({ where: { email: req.user.email } }).then((doc) => {
+            await dashmodel.findOne({ where: { email: req.user.email } }).then(async (doc) => {
                 if (!doc) {
                     await dashmodel.create({
                         uid: req.user.uuid,
@@ -136,9 +139,9 @@ module.exports = (app, passport) => {
                         user: "exists already"
                     });
                     // if (req.user.mode === 'google')
-                        // res.redirect(`${process.env.FRONTEND}?token=${token}`);
+                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
                     // else
-                        // res.redirect(`${process.env.FRONTEND}register?error=email`);
+                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
                 }
             })
             // res.status(201).json({
@@ -149,7 +152,7 @@ module.exports = (app, passport) => {
     app.get("/auth/github", passport.authenticate("github"));
 
     app.get("/auth/github/callback", passport.authenticate("github"),
-        (req, res) => {
+        async (req, res) => {
             const payload = {
                 id: req.user.uuid,
                 UserName: req.user.username,
@@ -160,7 +163,7 @@ module.exports = (app, passport) => {
             };
             var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
             res.cookie('jwt', token);
-            dashmodel.findOne({ where: { email: req.user.email } }).then((doc) => {
+            await dashmodel.findOne({ where: { email: req.user.email } }).then(async (doc) => {
                 if (!doc) {
                     await dashmodel.create({
                         uid: req.user.uuid,
@@ -180,9 +183,9 @@ module.exports = (app, passport) => {
                         user: "exists already"
                     });
                     // if (req.user.mode === 'google')
-                        // res.redirect(`${process.env.FRONTEND}?token=${token}`);
+                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
                     // else
-                        // res.redirect(`${process.env.FRONTEND}register?error=email`);
+                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
                 }
             })
             // res.status(201).json({
