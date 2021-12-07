@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes} = require("sequelize");
 const { sequelize } = require(".");
-module.exports = (sequelize, DataTypes, Sequelize) => {
+module.exports = (sequelize, DataTypes) => {
     const eventmodel = sequelize.define('eventmodel',{
         user:{
             type: DataTypes.STRING,

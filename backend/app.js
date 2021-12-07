@@ -7,7 +7,7 @@ const models = require('./models/index')
 const { sequelize } = require('./models');
 require('dotenv').config();
 let PORT = process.env.PORT;
-const isLoggedIn = require('./middleware/authorization');
+
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -25,8 +25,9 @@ app.get('/',(req,res)=> {
 //Routes
 require('./routes/authRoutes')(app, passport)
 require('./routes/roundRoutes')(app,passport)
-require('./routes/eventLogger')(app)
-require('./routes/manangeRoutes')(app, passport)
+// require('./routes/eventLogger')(app)
+require('./routes/manageRoutes')(app, passport)
+require('./routes/superuser')(app,passport)
 // const {
 //     models: {
 //         question_set_model,
