@@ -1,4 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes } = require('sequelize')
+module.exports = (sequelize) => {
   const roundmodel = sequelize.define("roundmodel",{
     roundNo:{
       type: DataTypes.INTEGER,

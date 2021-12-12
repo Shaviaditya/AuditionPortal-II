@@ -1,6 +1,5 @@
-const { Sequelize, DataTypes} = require("sequelize");
-const { sequelize } = require(".");
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes} = require("sequelize");
+module.exports = (sequelize) => {
     const eventmodel = sequelize.define('eventmodel',{
         user:{
             type: DataTypes.STRING,
@@ -15,4 +14,5 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
     })
+    return eventmodel;
 }

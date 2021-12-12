@@ -51,7 +51,7 @@ module.exports = (app, passport) => {
     app.get("/getRounds", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             let ques_arr = [];
-            await roundmodel.findAll().then(async (roundinfo) => {
+            await roundmodel.findAll({ include : question_set_model}).then(async (roundinfo) => {
                 if(roundinfo){
                     res.status(201).json(roundinfo);
                 } else {

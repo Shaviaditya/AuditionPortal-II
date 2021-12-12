@@ -1,9 +1,6 @@
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes } = require('sequelize')
+module.exports = (sequelize) => {
   const question_answered_model = sequelize.define("question_answered_model", {
-    answermodelId : {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
     qid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -23,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     ansLink: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
   });
   return question_answered_model;
 }
