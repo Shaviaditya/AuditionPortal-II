@@ -1,4 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes } = require('sequelize');
+module.exports = (sequelize) => {
   const dashmodel = sequelize.define('dashmodel', {
     uid: {
       type: DataTypes.STRING,

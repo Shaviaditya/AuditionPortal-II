@@ -1,6 +1,4 @@
 const { sequelize } = require('../models');
-let { DataTypes } = require('sequelize');
-const express = require('express');
 // const users = require('../models/users')(sequelize, DataTypes)
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -46,7 +44,7 @@ module.exports = (app, passport) => {
         // console.log(`Yay! we have email & password ${email} & ${password}`);
         users.getUserByEmail(email).then((data) => {
             try {
-                users.comparePassword(password, data.password, function (err, ans) {
+                users.comparePassword(password, data.password, async (err, ans) => {
                     if (err) {
                         console.log(err);
                         return res.status(500).json(err);
@@ -72,10 +70,35 @@ module.exports = (app, passport) => {
                             });
                         } else {
                             res.cookie('jwt', token);
-                            res.json({
-                                success: true,
-                                token: "Bearer " + token,
-                            });
+                            await dashmodel.findOne({ where: { email: payload.email } }).then(async (doc) => {
+                                if (!doc) {
+                                    await dashmodel.create({
+                                        uid: payload.uuid,
+                                        name: payload.username,
+                                        email: payload.email,
+                                    })
+                                    res.status(201).json({
+                                        success: true,
+                                        token: "Bearer " + token,
+                                        user: "Created"
+                                    });
+                                    //res.redirect(`${process.env.FRONTEND}?token=${token}`);
+                                } else {
+                                    res.status(201).json({
+                                        success: true,
+                                        token: "Bearer " + token,
+                                        user: "exists already"
+                                    });
+                                    // if (req.user.mode === 'google')
+                                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
+                                    // else
+                                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
+                                }
+                            })
+                            // res.json({
+                            //     success: true,
+                            //     token: "Bearer " + token,
+                            // });
                         }
                     } else {
                         return res.json({

@@ -3,8 +3,10 @@ const fs = require('fs');
 const path = require('path');
 // const roundmodel = require('../models/roundmodel');
 const eventlogger = require('./eventLogger')
-const sendMail = require('../services/reportSender')
+const { sendMail } = require('../services/reportSender')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const { Op } = require('sequelize');
+const { user } = require('pg/lib/defaults');
 require('dotenv').config();
 const {
     models:
@@ -210,49 +212,55 @@ module.exports = (app, passport) => {
                 });
                 var csvobject = []
                 var rejected = "";
-                // This route is unstable due to this check...
-                await dashmodel.findOne({ where : [[{ status : "review"},{status: "unevaluated"}],[{role: 's'},{round: Number(round)}]]}).then(async (userdoc) => {
-                // await dashmodel.findOne({ $or: [{ status: "review" }, { status: "unevaluated" }], $and: [{ role: 's' }, { round: Number(round) }] }).then((userdoc) => {
-                    console.log(userdoc)
-                    if (!userdoc.length) {
-                        fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
-                        fs.writeFileSync(
-                            path.resolve(__dirname + "../../config/auditionConfig.json"),
-                            save
-                        );
-                        await dashmodel.findAll()
-                            .then((doc) => {
-                                doc.forEach(async (user) => {
-                                    if (user.status === "rejected" && user.round === round) {
-                                        rejected += user.email + ",";
-                                    } else if (user.status === "selected" && user.round === round) {
-                                        csvobject.push(user)
-                                        const doc2 = await dashmodel.findOne({ where: { uid: user._id } })
-                                        doc2.status = "unevaluated";
-                                        doc2.round += 1;
-                                        doc2.time = 0;
-                                        doc2.save();
-                                        sendMail(
-                                            "Congratulations!",
-                                            `<html>Hi <b>${user.name}.</b><br/><br/>
-                        We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
-                        You will be moving ahead in the audition process.<br/>
-                        Further details will be let known very soon.<br/><br/>
-                        Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
-                        All latest updates will come there first!<br/><br/>
-                        Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
-                        Join here: ${process.env.DISCORD}<br/><br/>
-                        Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
-                        If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
-                        May The Source Be With You!🐧❤️<br/><br/>
-                        Thanking You,<br/>
-                        Your's Sincerely,<br/>
-                        <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
-                                            user.email
-                                        );
-                                    }
-                                });
-                            })
+                await dashmodel.findAll({
+                    where: {
+                        status: {
+                            [Op.or]: ["unevaluated", "review"]
+                        },
+                        [Op.and]: [
+                            { role: 's' },
+                            { round: Number(round) }
+                        ]
+                    }
+                }).then(async (userdoc) => {
+                    if (userdoc.length) {
+                        // fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
+                        // fs.writeFileSync(
+                        //     path.resolve(__dirname + "../../config/auditionConfig.json"),
+                        //     save
+                        // );
+                        await dashmodel.findAll().then((doc) => {
+                            doc.forEach(async (user) => {
+                                if (user.status === "rejected" && user.round === Number(round)) {
+                                    rejected += user.email + ",";
+                                } else if (user.status === "unevaluated" && user.round === Number(round)) {
+                                    csvobject.push(user)
+                                    const doc2 = await dashmodel.findOne({ where: { uid: user.uid } })
+                                    doc2.status = "unevaluated";
+                                    doc2.round += 1;
+                                    doc2.time = 0;
+                                    doc2.save();
+                                    sendMail(
+                                        "Congratulations!",
+                                        `<html>Hi <b>${doc2.name}.</b><br/><br/>
+                                        We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
+                                        You will be moving ahead in the audition process.<br/>
+                                        Further details will be let known very soon.<br/><br/>
+                                        Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
+                                        All latest updates will come there first!<br/><br/>
+                                        Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
+                                        Join here: ${process.env.DISCORD}<br/><br/>
+                                        Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
+                                        If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
+                                        May The Source Be With You!🐧❤️<br/><br/>
+                                        Thanking You,<br/>
+                                        Your's Sincerely,<br/>
+                                        <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
+                                        doc2.email
+                                    );
+                                }
+                            });
+                        })
                             .then(() => {
                                 const csvWriter = createCsvWriter({
                                     path: path.resolve(__dirname + `../../result/Result_${round}.csv`),
@@ -269,9 +277,9 @@ module.exports = (app, passport) => {
 
                                 const rejectedones = rejected.slice(0, -1);
                                 sendMail(
-                                    "Thank you for your participation.",
-                                    "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>",
-                                    rejectedones
+                                     "Thank you for your participation.",
+                                     "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>",
+                                     rejectedones
                                 );
                             })
                             .then(() => {
@@ -293,7 +301,7 @@ module.exports = (app, passport) => {
 
     app.get("/profile", authPass, async (req, res) => {
         if (req.user.role === "s") {
-            await dashmodel.findOne({ where: { uid: req.user._id } }).then(doc => {
+            await dashmodel.findOne({ where: { uid: req.user.uuid } }).then(doc => {
                 res.status(200).json({ phone: doc.phone, roll: doc.roll, profilebool: doc.profilebool })
             })
         }
@@ -318,7 +326,7 @@ module.exports = (app, passport) => {
         }
         else {
             var result = []
-            await dashmodel.find({ where: { status: "unevaluated", round: save.round } }).then((doc) => {
+            await dashmodel.findAll({ where: { status: "unevaluated", round: save.round } }).then((doc) => {
                 doc.forEach((kid) => {
                     result.push(kid.name)
                 })

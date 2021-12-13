@@ -11,7 +11,7 @@ let PORT = process.env.PORT;
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({ secret: 'my secret', cookie: { maxAge: 1200000 } }));
+app.use(session({ secret: 'my secret', cookie: { maxAge: 1200000 } ,resave: true, saveUninitialized: true }));
 app.use(passport.initialize())
 app.use(passport.session());
 app.use(express.urlencoded({ extended: true }))
@@ -28,14 +28,9 @@ require('./routes/roundRoutes')(app,passport)
 // require('./routes/eventLogger')(app)
 require('./routes/manageRoutes')(app, passport)
 require('./routes/superuser')(app,passport)
-// const {
-//     models: {
-//         question_set_model,
-//         roundmodel
-//     }
-// } = sequelize;
+require('./routes/student')(app,passport)
 
-//server call
+
 models.sequelize.sync().then(() => {
     try {
         sequelize.authentication;

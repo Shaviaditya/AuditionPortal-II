@@ -1,21 +1,18 @@
-const Sequelize = require('sequelize');
+const { Sequelize } = require('sequelize');
 const { DataTypes } = require('sequelize');
-// const { Sequelize } = require('sequelize');
-// const { default: answermodel } = require('./answermodel');
-// const { default: question_answered_model } = require('./question_answered_model');
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 const models = [
-  require('./users')(sequelize, Sequelize.DataTypes),
-  require('./roundmodel')(sequelize, Sequelize.DataTypes),
-  require('./question_set_model')(sequelize, Sequelize.DataTypes),
-  require('./eventmodel')(sequelize, Sequelize.DataTypes),
-  require('./question_answered_model')(sequelize, Sequelize.DataTypes),
-  require('./answermodel')(sequelize, Sequelize.DataTypes),
-  require('./dashmodel')(sequelize, Sequelize.DataTypes)
+  require('./users')(sequelize),
+  require('./roundmodel')(sequelize),
+  require('./question_set_model')(sequelize),
+  require('./eventmodel')(sequelize),
+  require('./question_answered_model')(sequelize),
+  require('./answermodel')(sequelize),
+  require('./dashmodel')(sequelize)
 ]
 
 const {
@@ -31,11 +28,10 @@ try {
   // Round Models => Questions Set Model (Each Round can have multiple questions of multiple types)
   roundmodel.hasMany(question_set_model, {
     foreignKey: {
-      type: DataTypes.UUID,
       allowNull: false
     }
   })
-  question_set_model.belongsTo(roundmodel,{constraints: true})
+  question_set_model.belongsTo(roundmodel, { constraints: true })
 } catch (err) {
   console.log(err);
 }
@@ -63,5 +59,4 @@ try {
   console.log(error)
 }
 
-models.sequelize = sequelize;
-module.exports = models;
+module.exports = { sequelize, models };

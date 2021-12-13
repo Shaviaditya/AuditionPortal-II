@@ -1,5 +1,5 @@
-const { UUIDV4 } = require("sequelize")
-module.exports = (sequelize, DataTypes) => {
+const { UUIDV4 , DataTypes } = require("sequelize")
+module.exports = (sequelize) => {
   const question_set_model = sequelize.define("question_set_model",{
     roundmodelId: {
       type: DataTypes.INTEGER,
