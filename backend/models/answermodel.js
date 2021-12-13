@@ -4,6 +4,10 @@ module.exports = (sequelize) => {
     roundNo: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    userDashId : {
+      type: DataTypes.STRING,
+      allowNull: false, 
     }
   });
   return answermodel;

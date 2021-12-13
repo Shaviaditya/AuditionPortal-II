@@ -21,6 +21,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    userAnswerId : {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
   });
   return question_answered_model;
 }

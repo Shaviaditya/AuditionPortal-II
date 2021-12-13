@@ -31,7 +31,7 @@ try {
       allowNull: false
     }
   })
-  question_set_model.belongsTo(roundmodel,{constraints: true})
+  question_set_model.belongsTo(roundmodel, { constraints: true })
 } catch (err) {
   console.log(err);
 }
