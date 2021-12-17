@@ -340,4 +340,19 @@ module.exports = (app, passport) => {
         res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
     });
 
+    // Beta Testing Route
+    app.put('/upgrade/:id', authPass, async (req,res) => {
+        let uuid = req.params.id
+        if(req.user.role === "su"){
+            dashmodel.findOne({
+                where: {
+                    uid : uuid 
+                }
+            }).then((doc)=>{
+                doc.round = doc.round+1
+                doc.save();
+                res.sendStatus(201)
+            })
+        }
+    })
 };
