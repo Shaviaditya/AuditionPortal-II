@@ -184,6 +184,9 @@ module.exports = (app, passport) => {
         if (req.user.role === "s") {
             var currenttime = new Date().getTime();
             var data = req.body
+            if(Array.isArray(data)===false){
+                data = [data];
+            }
             let save = JSON.parse(
                 fs.readFileSync(
                     path.resolve(__dirname + "../../config/auditionConfig.json")
