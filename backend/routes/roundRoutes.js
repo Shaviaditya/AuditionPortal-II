@@ -1,6 +1,4 @@
 const { sequelize, models } = require('../models/index');
-//const eventLogger = require('./eventLogger');
-// const { sequelize} = require('sequelize')
 const eventlogger = require('./eventLogger');
 require('dotenv').config();
 const { models: { users, roundmodel, question_set_model, eventmodel } } = sequelize;
@@ -14,6 +12,7 @@ module.exports = (app, passport) => {
     // Round Routes
     const authWall = passport.authenticate("jwt", { session: false });
 
+    // Checked!
     app.post("/addRound", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             var presetRounds = 0;
@@ -24,22 +23,27 @@ module.exports = (app, passport) => {
                     presetRounds = doc.length;
             })
             const { time, quesText, quesLink, quesType, options, score } = req.body;
-            await roundmodel.create({ roundNo: presetRounds + 1, time: time });
-            await question_set_model.create({
-                roundmodelId: presetRounds + 1,
-                quesText: quesText,
-                quesLink: quesLink,
-                quesType: quesType,
-                options: options,
-                score: score,
-            })
+            await roundmodel.create({ roundNo: presetRounds + 1, time: time }).then((roundins)=>{
+                question_set_model.create({
+                    roundNo: presetRounds + 1,
+                    quesText: quesText,
+                    quesLink: quesLink,
+                    quesType: quesType,
+                    options: options,
+                    score: score,
+                    roundmodelId: roundins.id 
+                })
+            });
             await roundmodel.findOne({ where: { roundNo: presetRounds + 1 }, }).then(async (roundinfo) => {
-                await question_set_model.findOne({ where: { roundmodelId: roundinfo.roundNo } }).then(async (doc) => {
-                    // if (doc) {
-                    if(await eventlogger(req.user, `added Round ${presetRounds + 1}`)){
-                        return res.status(201).json({ success: true });
-                    } else {
-                        return res.status(400).json({ success: false })
+                await question_set_model.findOne({ where: { roundNo: roundinfo.roundNo } }).then(async (doc) => {
+                    try{
+                        if(eventlogger(req.user, `added Round ${presetRounds + 1}`)){
+                            return res.status(201).json({ success: true });
+                        }else {
+                            return res.status(400).json({ success: false })
+                        }
+                    } catch (err) {
+                        console.log(err);
                     }
                 })
             })
@@ -48,6 +52,7 @@ module.exports = (app, passport) => {
         }
     })
 
+    // Checked!
     app.get("/getRounds", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             let ques_arr = [];
@@ -63,6 +68,7 @@ module.exports = (app, passport) => {
         }
     })
 
+    // Checked!
     app.get("/getQuestions", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             await question_set_model.findAll().then(async (quizinfo) => {
@@ -77,18 +83,22 @@ module.exports = (app, passport) => {
         }
     })
 
+    // Checked!
     app.post("/addQuestion", authWall, async (req, res) => {
         if (req.user.role == "su" || req.user.role == "m") {
             const { roundNo, quesText, quesLink, quesType, options, score } = req.body;
-            await question_set_model.create({
-                roundmodelId: roundNo,
-                quesText: quesText,
-                quesLink: quesLink,
-                quesType: quesType,
-                options: options,
-                score: score,
+            roundmodel.findOne({where:{roundNo:roundNo}}).then((doc)=>{
+                question_set_model.create({
+                    roundNo: roundNo,
+                    quesText: quesText,
+                    quesLink: quesLink,
+                    quesType: quesType,
+                    options: options,
+                    score: score,
+                    roundmodelId: doc.id,
+                })
             })
-            await question_set_model.findAll({ where: { roundmodelId: roundNo }}).then((doc) => {
+            await question_set_model.findAll({ where: { roundNo: roundNo }}).then((doc) => {
                 if (doc) {
                     return res.status(201).json({success: true})
                 } else {
@@ -99,6 +109,8 @@ module.exports = (app, passport) => {
             return res.sendStatus(401);
         }
     })
+
+    // Checked!
     app.delete("/removeQuestion/:id", authWall, async (req, res) => {
         if (req.user.role == "su" || req.user.role == "m") {
             try {
@@ -115,17 +127,29 @@ module.exports = (app, passport) => {
             }
         }
     })
-    app.delete("/updateRound", authWall, async (req, res) => {
+    
+    // 
+    app.delete("/removeRound", authWall, async (req, res) => {
         if (req.user.role == "su" || req.user.role == "m") {
+            const getRoundInfo = req.body.roundNo
+            console.log(getRoundInfo)
             try {
                 const round = await roundmodel.findOne({
                     where: {
-                        roundNo: req.body.roundmodelId,
+                        roundNo: getRoundInfo,
                     }
                 })
                 await round.destroy();
+                await question_set_model.findAll({
+                    where:{
+                        roundNo: getRoundInfo,
+                    }
+                }).then((question)=>{
+                    question.destroy;
+                })
                 return res.status(200).json({ delete: true });
             } catch (err) {
+                console.log(err);
                 return res.status(500).json(err);
             }
         }

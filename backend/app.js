@@ -7,7 +7,21 @@ const models = require('./models/index')
 const { sequelize } = require('./models');
 require('dotenv').config();
 let PORT = process.env.PORT;
-
+// const pgtools = require('pgtools')
+// const env = process.env.NODE_ENV || 'development';
+// const config = require(__dirname + '/config/config.json')[env];
+// pgtools.createdb({
+//   user: config.username,
+//   password: config.password,
+//   port: 5432,
+//   host: 'localhost'
+// }, config.database, function (err, res) {
+//   if (err) {
+//     console.error(err);
+//     process.exit(-1);
+//   }
+//   console.log(res);
+// });
 //Middlewares
 app.use(express.json());
 app.use(cookieParser());

@@ -258,7 +258,7 @@ module.exports = (app, passport) => {
                         roundId: ans.qid
                     }
                 }).then(async (doc1) => {
-                    if (doc1.roundmodelId === save.round) {
+                    if (doc1.roundNo === save.round) {
                         return ansArr.push(ans);
                     }
                 })
