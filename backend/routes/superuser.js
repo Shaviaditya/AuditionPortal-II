@@ -226,11 +226,7 @@ module.exports = (app, passport) => {
                 }).then(async (userdoc) => {
                     console.log(userdoc)
                     if (userdoc.length) {
-                        // fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
-                        // fs.writeFileSync(
-                        //     path.resolve(__dirname + "../../config/auditionConfig.json"),
-                        //     save
-                        // );
+                        fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
                         await dashmodel.findAll().then((doc) => {
                             doc.forEach(async (user) => {
                                 if (user.status === "rejected" && user.round === Number(round)) {
@@ -298,6 +294,7 @@ module.exports = (app, passport) => {
                                 else
                                     res.sendStatus(500)
                             })
+                            fs.writeFileSync(path.resolve(__dirname + "../../config/auditionConfig.json"),save);
                     } else {
                         res.status(200).send({ status: false })
                     }
