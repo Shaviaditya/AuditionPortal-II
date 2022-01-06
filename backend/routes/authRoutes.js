@@ -27,15 +27,6 @@ module.exports = (app, passport) => {
                     }
                 })
             })
-        // console.log(details);
-        // .then((data) => {
-        //     try {
-        //         return res.status(201).json(data)
-        //     } catch (err) {
-        //         console.log(err)
-        //         return res.status(500).json(err)
-        //     }
-        // })
     })
 
 

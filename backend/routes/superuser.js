@@ -1,12 +1,11 @@
 const { sequelize } = require('../models');
 const fs = require('fs');
+const csv = require('csv-parser');
 const path = require('path');
-// const roundmodel = require('../models/roundmodel');
 const eventlogger = require('./eventLogger')
 const { sendMail } = require('../services/reportSender')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { Op } = require('sequelize');
-const { user } = require('pg/lib/defaults');
 require('dotenv').config();
 const {
     models:
@@ -115,24 +114,25 @@ module.exports = (app, passport) => {
         authPass,
         async (req, res) => {
             if (req.user.role === "su") {
-                let save = JSON.parse(
-                    fs.readFileSync(
-                        path.resolve(__dirname + "../../config/auditionConfig.json")
-                    )
-                );
-
-                save.round = save.round;
-                save.status = "def";
-                if (eventlogger(req.user, `Stopped Round ${save.round}`)) {
-                    save = JSON.stringify(save);
-                    fs.writeFileSync(
-                        path.resolve(__dirname + "../../config/auditionConfig.json"),
-                        save
+                try {
+                    let save = JSON.parse(
+                        fs.readFileSync(
+                            path.resolve(__dirname + "../../config/auditionConfig.json")
+                        )
                     );
-                    res.sendStatus(200);
-                } else {
-                    res.sendStatus(500)
-                }
+                    save.round = save.round;
+                    save.status = "def";
+                    if (eventlogger(req.user, `Stopped Round ${save.round}`)) {
+                        save = JSON.stringify(save);
+                        fs.writeFileSync(
+                            path.resolve(__dirname + "../../config/auditionConfig.json"),
+                            save
+                        );
+                        res.sendStatus(200);
+                    } else {
+                        res.sendStatus(500)
+                    }
+                } catch (e) { console.log(e); res.sendStatus(500) }
 
             } else {
                 res.sendStatus(300);
@@ -212,10 +212,11 @@ module.exports = (app, passport) => {
                 });
                 var csvobject = []
                 var rejected = "";
+                var unevaluated = "";
                 await dashmodel.findAll({
                     where: {
                         status: {
-                            [Op.or]: ["unevaluated", "review"]
+                            [Op.or]: ["unevaluated", "review", "rejected"]
                         },
                         [Op.and]: [
                             { role: 's' },
@@ -223,41 +224,21 @@ module.exports = (app, passport) => {
                         ]
                     }
                 }).then(async (userdoc) => {
+                    console.log(userdoc)
                     if (userdoc.length) {
-                        // fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
-                        // fs.writeFileSync(
-                        //     path.resolve(__dirname + "../../config/auditionConfig.json"),
-                        //     save
-                        // );
+                        fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
                         await dashmodel.findAll().then((doc) => {
                             doc.forEach(async (user) => {
                                 if (user.status === "rejected" && user.round === Number(round)) {
                                     rejected += user.email + ",";
                                 } else if (user.status === "unevaluated" && user.round === Number(round)) {
                                     csvobject.push(user)
-                                    const doc2 = await dashmodel.findOne({ where: { uid: user.uid } })
-                                    doc2.status = "unevaluated";
-                                    doc2.round += 1;
-                                    doc2.time = 0;
-                                    doc2.save();
-                                    sendMail(
-                                        "Congratulations!",
-                                        `<html>Hi <b>${doc2.name}.</b><br/><br/>
-                                        We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
-                                        You will be moving ahead in the audition process.<br/>
-                                        Further details will be let known very soon.<br/><br/>
-                                        Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
-                                        All latest updates will come there first!<br/><br/>
-                                        Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
-                                        Join here: ${process.env.DISCORD}<br/><br/>
-                                        Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
-                                        If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
-                                        May The Source Be With You!🐧❤️<br/><br/>
-                                        Thanking You,<br/>
-                                        Your's Sincerely,<br/>
-                                        <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
-                                        doc2.email
-                                    );
+                                    dashmodel.findOne({ where: { uid: user.uid } }).then((doc2) => {
+                                        doc2.status = "unevaluated";
+                                        doc2.round += 1;
+                                        doc2.time = 0;
+                                        doc2.save();
+                                    })
                                 }
                             });
                         })
@@ -274,13 +255,38 @@ module.exports = (app, passport) => {
                                 csvWriter
                                     .writeRecords(csvobject)
                                     .then(() => console.log('The CSV file was written successfully'));
-
                                 const rejectedones = rejected.slice(0, -1);
                                 sendMail(
-                                     "Thank you for your participation.",
-                                     "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>",
-                                     rejectedones
+                                    "Thank you for your participation.",
+                                    "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>",
+                                    rejectedones
                                 );
+                                const results = [];
+                                fs.createReadStream(path.resolve(__dirname+`../../result/Result_${round}.csv`))
+                                    .pipe(csv())
+                                    .on('data', (data) => results.push(data))
+                                    .on('end',() => {
+                                        results.forEach(doc2 => {
+                                            sendMail(
+                                                "Congratulations!",
+                                                `<html>Hi <b>${doc2.Name}.</b><br/><br/>
+                                                We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
+                                                You will be moving ahead in the audition process.<br/>
+                                                Further details will be let known very soon.<br/><br/>
+                                                Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
+                                                All latest updates will come there first!<br/><br/>
+                                                Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
+                                                Join here: ${process.env.DISCORD}<br/><br/>
+                                                Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
+                                                If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
+                                                May The Source Be With You!🐧❤️<br/><br/>
+                                                Thanking You,<br/>
+                                                Your's Sincerely,<br/>
+                                                <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
+                                                doc2.Email
+                                            );
+                                        })
+                                    })
                             })
                             .then(() => {
                                 if (eventlogger(req.user, `Result pushed for round ${round}`))
@@ -288,6 +294,7 @@ module.exports = (app, passport) => {
                                 else
                                     res.sendStatus(500)
                             })
+                            fs.writeFileSync(path.resolve(__dirname + "../../config/auditionConfig.json"),save);
                     } else {
                         res.status(200).send({ status: false })
                     }
@@ -340,4 +347,33 @@ module.exports = (app, passport) => {
         res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
     });
 
+    // Beta Testing Route
+    app.put('/upgrade/:id', authPass, async (req, res) => {
+        let uuid = req.params.id
+        if (req.user.role === "su") {
+            dashmodel.findOne({
+                where: {
+                    uid: uuid
+                }
+            }).then((doc) => {
+                doc.round = 1
+                doc.save();
+                res.sendStatus(201)
+            })
+        }
+    })
+    app.put('/reject/:id', authPass, async (req, res) => {
+        let uuid = req.params.id
+        if (req.user.role === "su") {
+            dashmodel.findOne({
+                where: {
+                    uid: uuid
+                }
+            }).then((doc) => {
+                doc.status = "rejected"
+                doc.save();
+                res.sendStatus(201)
+            })
+        }
+    })
 };

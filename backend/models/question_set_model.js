@@ -1,7 +1,7 @@
 const { UUIDV4 , DataTypes } = require("sequelize")
 module.exports = (sequelize) => {
   const question_set_model = sequelize.define("question_set_model",{
-    roundmodelId: {
+    roundNo: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
