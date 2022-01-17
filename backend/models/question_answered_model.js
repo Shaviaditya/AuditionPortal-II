@@ -1,4 +1,5 @@
 const { DataTypes } = require('sequelize')
+const users = require('./users')
 module.exports = (sequelize) => {
   const question_answered_model = sequelize.define("question_answered_model", {
     qid: {
@@ -7,11 +8,11 @@ module.exports = (sequelize) => {
     },
     answer: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     qtype: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     score: {
       type: DataTypes.INTEGER,
@@ -21,10 +22,19 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    userAnswerId : {
-      type: DataTypes.STRING,
+    roundInfo: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
+    // userUuid: {
+    //   type: DataTypes.UUID,
+    //   allowNull: false,
+    //   references:{
+    //     model: users,
+    //     key: 'uuid',
+    //     onDele 
+    //   }
+    // }
   });
   return question_answered_model;
 }

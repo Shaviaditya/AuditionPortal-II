@@ -1,15 +1,14 @@
 // Tested all routes 
-const { user } = require('pg/lib/defaults');
-const eventlogger = require('./eventLogger')
+const worker_connect = require('./controller')
 const { sequelize } = require('../models');
 require('dotenv').config();
 const {
     models:
     {
         users,
-        dashmodel
     }
 } = sequelize;
+const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
@@ -20,7 +19,7 @@ module.exports = (app, passport) => {
         console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await dashmodel.findAll().then((data) => {
+                await users.findAll().then((data) => {
                     return res.status(200).json({ data: data, user: req.user.username });
                 })
             } catch (e) {
@@ -29,7 +28,7 @@ module.exports = (app, passport) => {
             }
         } else {
             try {
-                const data = await users.getUserById(req.user);
+                const data = await users.findOne({ where: { uuid: req.user.uuid } });
                 data.flag = true;
                 data.save();
                 return res.status(200).json(data);
@@ -44,7 +43,7 @@ module.exports = (app, passport) => {
         console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await dashmodel.findOne({ where: { uuid: req.body.uuid } }).then((data) => {
+                await users.findOne({ where: { uuid: req.body.uuid } }).then((data) => {
                     return res.status(200).json({ data: data, user: req.user.username });
                 })
             } catch (e) {
@@ -53,7 +52,7 @@ module.exports = (app, passport) => {
             }
         } else {
             try {
-                const data = await users.getUserById(req.user);
+                const data = await users.findOne({ where: { uuid: req.user.uuid } });
                 data.flag = true;
                 data.save();
                 return res.status(200).json(data);
@@ -73,10 +72,11 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m" && req.user.clearance >= a.round)
             ) {
-                const entry = await dashmodel.findOne({ where: { uid: req.body.uid } })
+                const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 entry.status = a.status
                 entry.save().then(() => {
-                    if (eventlogger(req.user, `Changed selection status for ${a.name} to ${a.status}`))
+                    const w1 = worker_connect.get();
+                    if (w1.eventlog(req.user, `Changed selection status for ${a.name} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -96,12 +96,12 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m")
             ) {
-                const entry = await dashmodel.findOne({ where: { uid: req.body.uuid } })
-                if(entry.feedback.length == 0){
+                const entry = await users.findOne({ where: { uuid: req.body.uuid } })
+                if (entry.feedback.length == 0) {
                     let arr = []
                     arr.push(req.body.feedback);
                     entry.feedback = arr;
-                } else { 
+                } else {
                     let arr = [];
                     entry.feedback.forEach(el => {
                         arr.push(el);
@@ -111,7 +111,8 @@ module.exports = (app, passport) => {
                 }
                 // console.log(entry.feedback);
                 entry.save().then(() => {
-                    if (eventlogger(req.user, `Added feedback for ${entry.name}`))
+                    const w2 = worker_connect.get();
+                    if (w2.eventlog(req.user, `Added feedback for ${entry.name}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -121,6 +122,4 @@ module.exports = (app, passport) => {
             }
         }
     );
-
-
 };

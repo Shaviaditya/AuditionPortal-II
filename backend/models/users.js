@@ -1,10 +1,11 @@
 const { UUIDV4, DataTypes } = require("sequelize");
-var bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 module.exports = (sequelize) => {
   const users = sequelize.define('users', {
     uuid: {
       type: DataTypes.UUID,
-      defaultValue: UUIDV4
+      defaultValue: UUIDV4,
+      primaryKey: true,
     },
     username: {
       type: DataTypes.STRING,
@@ -24,6 +25,11 @@ module.exports = (sequelize) => {
       allowNull: true,
       defaultValue: "s"
     },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "unevaluated"
+    },
     flag: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
@@ -36,6 +42,36 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
       defaultValue: "normal"
+    },
+    round: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1
+    },
+    time: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0
+    },
+    feedback: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      allowNull: true
+    },
+    phone: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    lastUser: {
+      type: DataTypes.STRING
+    },
+    roll: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    profilebool: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   });
   users.createUser = async (newUser) => {
@@ -53,11 +89,11 @@ module.exports = (sequelize) => {
   }
   users.getUserById = async (_id) => {
     let param1 = _id.id, param2 = _id.uuid;
-    if(param1!=undefined && param2!=undefined)
-      return await users.findOne({ where: { uuid: ((param1.length>param2.length)?(param1):(param2)) } })
-    else if(param1!=undefined && param2==undefined)
+    if (param1 != undefined && param2 != undefined)
+      return await users.findOne({ where: { uuid: ((param1.length > param2.length) ? (param1) : (param2)) } })
+    else if (param1 != undefined && param2 == undefined)
       return await users.findOne({ where: { uuid: param1 } })
-    else 
+    else
       return await users.findOne({ where: { uuid: param2 } })
   }
   users.getUserByEmail = async (_email) => {

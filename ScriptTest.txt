@@ -1,0 +1,46 @@
+Testing script
+
+
+//Localuser Login
+{
+   "username":"Mouli",
+   "email":"mouli@mail.com",
+   "password":"Mouli"
+}
+
+//Superuser Login
+{
+   "username":"rohan",
+   "email":"rohan@mail.com",
+   "password":"rohan"
+}
+
+//Sample Round Addiiton.
+{
+   "quesText":"Choose one of the options?",
+   "options":"1,2,3,4",
+   "quesType":"MCQs",
+   "score":20,
+   "time": 60
+}
+
+//Sample Question addition to a specific round.
+{
+   "roundNo":1,
+   "quesText":"What is React?",
+   "options":"1,2,3,4",
+   "quesType":"Subjective",
+   "score":10
+}
+
+{
+   "roundNo":1,
+   "quesText":"What is EEPROM?",
+   "quesType":"Subjective",
+   "score":15
+}
+
+{
+   "qid":"a6bca421-e217-49f5-8f60-e9f8b46ff5e4",
+   "answer":"1"
+}

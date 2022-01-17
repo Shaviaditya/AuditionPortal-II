@@ -1,6 +1,10 @@
 const { sequelize } = require("../models");
 const multer = require('multer');
+const express = require('express');
+const router = express.Router();
 const upload = require('../services/upload')
+const workerpool = require('workerpool')
+const pool = workerpool.pool();
 const { models: { eventmodel } } = sequelize;
 require('dotenv').config();
 let clients = [];
@@ -29,32 +33,34 @@ const eventHandler = async (req, res, next) => {
 }
 
 function sendEventsToAll(newLog) {
-    // console.log(newLog);
+    console.log(newLog);
+    console.log(clients);
+    console.log(clients);
     clients.forEach(c => c.res.write(`data: [${JSON.stringify(newLog)}]\n\n`))
     console.log(clients);
     return true;
 }
 
 const eventlogger = async (user, message) => {
+    console.log(user)
     await eventmodel.create({
-        user: user.username + '(' + user.role + ')',
+        user: `${user.dataValues.username} (${user.dataValues.role})`,
         time: (new Date()).toString().substring(0, 24),
         message: message
     }).then((newLog) => {
         return sendEventsToAll(newLog);
     })
 }
-module.exports = (app) => {
-    app.get('/events', eventHandler);
-
-    app.post('/upload', upload.single("file"), (req, res) => {
-        if (req.file && req.file.path) {
-            return res.status(200).json({ link: req.file.path });
-        }
-        else {
-            return res.status(200).json({ link: false });
-        }
-    })
-    //Upload File work goes here
+router.get('/events', eventHandler);
+router.post('/upload', upload.single("file"), (req, res) => {
+    if (req.file && req.file.path) {
+        return res.status(200).json({ link: req.file.path });
+    }
+    else {
+        return res.status(200).json({ link: false });
+    }
+})
+module.exports = {
+    eventlogger,
+    router
 }
-module.exports = eventlogger

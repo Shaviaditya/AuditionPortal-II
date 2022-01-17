@@ -9,52 +9,34 @@ const models = [
   require('./question_set_model')(sequelize),
   require('./eventmodel')(sequelize),
   require('./question_answered_model')(sequelize),
-  require('./answermodel')(sequelize),
-  require('./dashmodel')(sequelize)
 ]
 
 const {
   models: {
+    users,
     roundmodel,
     question_set_model,
-    answermodel,
     question_answered_model,
-    dashmodel
   }
 } = sequelize;
-try {
-  // Round Models => Questions Set Model (Each Round can have multiple questions of multiple types)
-  roundmodel.hasMany(question_set_model, {
-    foreignKey: {
-      allowNull: false
-    }
-  })
-  question_set_model.belongsTo(roundmodel, { constraints: true })
-} catch (err) {
-  console.log(err);
-}
 
-// Answer Model => Question-Answer Models Connection (Each Student can answer multiple questions so to store his responses round wise)
-try {
-  answermodel.hasMany(question_answered_model, {
-    foreignKey: {
-      allowNull: false
-    }
-  })
-  question_answered_model.belongsTo(answermodel)
-} catch (error) {
-  console.log(error)
-}
-// Dash Model => Answer Model Connection (Each Student can answer multiple questions so to store his responses round wise)
-try {
-  dashmodel.hasMany(answermodel, {
-    foreignKey: {
-      allowNull: false
-    }
-  })
-  answermodel.belongsTo(dashmodel)
-} catch (error) {
-  console.log(error)
-}
+roundmodel.hasMany(question_set_model, {
+  foreignKey: {
+    allowNull: false
+  },
+  onDelete: 'CASCADE'
+})
+question_set_model.belongsTo(roundmodel, { constraints: true })
+
+/*users.hasMany(question_answered_model, {
+  foreignKey: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  onDelete: 'CASCADE'
+})*/
+question_answered_model.belongsTo(users,{
+    onDelete : 'CASCADE'
+})
 
 module.exports = { sequelize, models };
