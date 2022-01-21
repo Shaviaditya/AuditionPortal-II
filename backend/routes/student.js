@@ -13,7 +13,7 @@ const {
     }
 } = sequelize;
 var ansArr = [];
-const workers = worker_connect.get();
+// const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
@@ -35,7 +35,7 @@ module.exports = (app, passport) => {
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
-            // Finds his dahsboard 
+            // Finds his dashboard 
             await users.findOne({
                 where: {
                     uuid: req.user.uuid
@@ -153,7 +153,7 @@ module.exports = (app, passport) => {
         );
         question_answered_model.findAll({
             where: {
-                uuid: req.user.uuid
+                userUuid: req.user.uuid
             }
         }).then(async (doc) => {
             if (!doc) { res.sendStatus(401) }
@@ -202,7 +202,7 @@ module.exports = (app, passport) => {
                 kid.status = "unevaluated"
                 kid.save().then(() => {
                     const worker1 = worker_connect.get();
-                    if (worker1.eventlog(req.user, `Used the wildcard feature to push ${kid.name} to Round ${save.round}`))
+                    if (worker1.eventlog(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
                         res.sendStatus(200)
                     else res.sendStatus(500)
                 })
@@ -212,62 +212,3 @@ module.exports = (app, passport) => {
         }
     })
 }
-/* app.put('/student/answerround', authPass, async (req, res) => {
-        if (req.user.role === "s") {
-            var currenttime = new Date().getTime();
-            var data = req.body
-            if (Array.isArray(data) === false) {
-                data = [data];
-            }
-            let save = JSON.parse(
-                fs.readFileSync(
-                    path.resolve(__dirname + "../../config/auditionConfig.json")
-                )
-            );
-            users.findOne({
-                where: {
-                    uuid: req.body.uuid
-                }
-            }).then((doc1) => {
-                if (save.round === round.roundNo && save.status === "ong"
-                    && doc1.time >= currenttime && doc1.round === round.roundNo) {
-                    data.forEach(doc => {
-                        question_answered_model.findOne({
-                            where: {
-                                [Op.and]: [
-                                    { qid: doc.qid },
-                                    { userAnswerId: req.user.uuid }
-                                ]
-                            }
-                        }).then((key) => {
-                            if (!key) {
-                                answermodel.findOne({
-                                    where: {
-                                        [Op.and]: [
-                                            { userDashId: req.user.uuid },
-                                            { roundNo: save.round },
-                                        ]
-                                    }
-                                }).then((nextOp) => {
-                                    question_answered_model.create({
-                                        answermodelId: nextOp.uuid,
-                                        userAnswerId: doc.userAnswerId,
-                                        qid: doc.qid,
-                                        qtype: doc.qtype,
-                                        answer: doc.answer
-                                    }).then((ans) => {
-                                        res.sendStatus(201)
-                                    })
-                                })
-                            } else {
-                                key.answer = doc.answer,
-                                    key.save();
-                            }
-                        })
-                    })
-                } else {
-                    res.sendStatus(401)
-                }
-            })
-        }
-    }) */

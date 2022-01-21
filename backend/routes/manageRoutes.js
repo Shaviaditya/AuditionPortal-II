@@ -1,27 +1,34 @@
 // Tested all routes 
 const worker_connect = require('./controller')
 const { sequelize } = require('../models');
+// const question_answered_model = require('../models/question_answered_model');
 require('dotenv').config();
 const {
     models:
     {
         users,
+        question_answered_model
     }
 } = sequelize;
-const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
     require("../passport/passportgithub")(passport);
 
     const authPass = passport.authenticate("jwt", { session: false });
-    app.get("/protected/getUsers", authPass, async (req, res) => {
+    app.post("/protected/getUser", authPass, async (req, res) => {
         console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await users.findAll().then((data) => {
-                    return res.status(200).json({ data: data, user: req.user.username });
+                let userArr = [];
+                // Eager Loading not working so applied Lazy Loading based on Promises
+                await users.findOne({ where : { uuid: req.body.uuid }}).then(async (e) => {
+                    if(!e){res.sendStatus(404)}
+                    await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
+                        return userArr.push([e,{"responses":data}]);
+                    })
                 })
+                return res.status(200).json({ data: userArr, user: req.user.username });
             } catch (e) {
                 res.sendStatus(404);
                 console.log(e);
@@ -39,13 +46,20 @@ module.exports = (app, passport) => {
         }
     })
 
-    app.post("/protected/getUser", authPass, async (req, res) => {
-        console.log(req.user);
+    app.get("/protected/getUsers", authPass, async (req, res) => {
+        // console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await users.findOne({ where: { uuid: req.body.uuid } }).then((data) => {
-                    return res.status(200).json({ data: data, user: req.user.username });
+                let userArr = [];
+                // Eager Loading not working so applied Lazy Loading based on Promises
+                await users.findAll({ where : { role: "s"}}).then(async (d1) => {
+                    await Promise.all(d1.map(async e => {
+                        await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
+                            return userArr.push([e,{"responses":data}]);
+                        }) 
+                    }))
                 })
+                return res.status(200).json({ data: userArr, user: req.user.username });
             } catch (e) {
                 res.sendStatus(404);
                 console.log(e);
@@ -76,7 +90,7 @@ module.exports = (app, passport) => {
                 entry.status = a.status
                 entry.save().then(() => {
                     const w1 = worker_connect.get();
-                    if (w1.eventlog(req.user, `Changed selection status for ${a.name} to ${a.status}`))
+                    if (w1.eventlog(req.user, `Changed selection status for ${a.username} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });

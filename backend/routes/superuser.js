@@ -5,6 +5,7 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const worker_connect = require('./controller')
 const { Op } = require('sequelize');
+const {eventlogger} = require('./eventLogger')
 // const question_answered_model = require('../models/question_answered_model');
 require('dotenv').config();
 const {
@@ -30,22 +31,18 @@ module.exports = (app, passport) => {
         authPass,
         async (req, res) => {
             if (req.user.role === "su") {
-                // console.log(req.user);
-                // var role = req.body.role;
-                // const userDetails = await users.getUserById(req.body)
-                // userDetails.role = role;
-                // await userDetails.save();
-                const details = await users.findOne({ where: { uuid: req.body.uuid } });
+                const { uuid, role } = req.body
+                const details = await users.findOne({ where: { uuid: uuid } });
                 details.role = role;
                 details.save();
                 console.log(details)
                 const w1 = worker_connect.get();
-                if (w1.eventlog(req.user, `changed the role for ${details.name} to ${role}`))
+                if (w1.eventlog(req.user, `changed the role for ${details.username} to ${role}`))
                     res.sendStatus(201).json({ success: "true" });
-                else 
+                else
                     res.sendStatus(500).json({ success: "false" });
             } else {
-                res.sendStatus(401).json({ success: "failed" });;
+                res.sendStatus(401).json({ success: "failed" });
             }
         }
     );
@@ -53,24 +50,19 @@ module.exports = (app, passport) => {
     app.put(
         "/protected/setclearance", authPass,
         async (req, res) => {
-            try {
-                if (req.user.role === "su") {
-                    var uuid = req.body.uuid;
-                    var clearance = req.body.clearance
-                    const details = await users.getUserById(req.body);
-                    details.clearance = clearance;
-                    details.save();
-                    const worker2 = worker_connect.get();
-                    if (worker2.eventlog(req.user, `Set Clearance for ${details.username} to ${clearance}`))
-                        res.sendStatus(202);
-                    else
-                        res.sendStatus(500)
-                } else {
-                    res.sendStatus(401);
-                }
-            } catch (err) {
-                console.log(err);
-                return res.sendStatus(401);
+            if (req.user.role === "su") {
+                const { uuid, clearance } = req.body
+                const details = await users.findOne({ where: { uuid: uuid } })
+                details.clearance = clearance;
+                await details.save();
+                console.log(details)
+                const worker2 = worker_connect.get();
+                if (worker2.eventlog(req.user, `Set Clearance for ${details.username} to ${clearance}`))
+                    res.sendStatus(201).json({success:'true'});
+                else
+                    res.sendStatus(500).json({success:'false'})
+            } else {
+                res.sendStatus(401).json({ success: "failed" });
             }
         }
     )
@@ -91,8 +83,9 @@ module.exports = (app, passport) => {
                         res.sendStatus(400);
                     } else {
                         save.time = doc.time;
-                        const worker1 = worker_connect.get();
-                        if (worker1.eventlog(req.user, `Pushed Round ${save.round}`)) {
+                        const { eventlog } = worker_connect.get();
+                        if (eventlog(req.user, `Pushed Round ${save.round}`)) {
+                            eventlogger(req.user, `Pushed Round ${save.round}`)
                             save = JSON.stringify(save);
                             fs.writeFileSync(
                                 path.resolve(__dirname + "../../config/auditionConfig.json"),
@@ -232,7 +225,7 @@ module.exports = (app, passport) => {
                     console.log(userdoc)
                     if (userdoc.length) {
                         fs.closeSync(fs.openSync(path.resolve(__dirname + `../../result/Result_${round}.csv`), 'w'))
-                        await users.findAll({ where : { role:'s' }}).then((doc) => {
+                        await users.findAll({ where: { role: 's' } }).then((doc) => {
                             doc.forEach(async (user) => {
                                 if (user.status === "rejected" && user.round === Number(round)) {
                                     rejected += user.email + ",";
@@ -320,9 +313,9 @@ module.exports = (app, passport) => {
         }
     })
 
-    app.get("/getResult", authPass ,async (req, res) => {
+    app.get("/getResult", authPass, async (req, res) => {
         console.log(req.user)
-        if(req.user.dataValues.role =="su"){
+        if (req.user.dataValues.role == "su") {
             let save = JSON.parse(
                 fs.readFileSync(
                     path.resolve(__dirname + "../../config/auditionConfig.json")
@@ -332,10 +325,10 @@ module.exports = (app, passport) => {
             if (save.status === "res") {
                 var result = []
                 users.findAll({
-                    where:{
+                    where: {
                         [Op.and]: [
-                            {status : "unevaluated"},
-                            { role : "s"},
+                            { status: "unevaluated" },
+                            { role: "s" },
                             { round: save.round }
                         ]
                     }
@@ -350,10 +343,10 @@ module.exports = (app, passport) => {
             else {
                 var result = []
                 users.findAll({
-                    where:{
+                    where: {
                         [Op.and]: [
-                            {status : "unevaluated"},
-                            { role : "s"},
+                            { status: "unevaluated" },
+                            { role: "s" },
                             { round: save.round }
                         ]
                     }
@@ -381,7 +374,7 @@ module.exports = (app, passport) => {
                     uuid: id
                 }
             }).then((doc) => {
-                doc.round+=1
+                doc.round += 1
                 doc.save();
                 res.sendStatus(201)
             })
