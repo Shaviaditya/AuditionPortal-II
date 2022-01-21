@@ -333,11 +333,10 @@ module.exports = (app, passport) => {
                 var result = []
                 users.findAll({
                     where:{
-                        status: {
-                            [Op.or]: ["unevaluated"]
-                        },
                         [Op.and]: [
-                            { round: save.round + 1 }
+                            {status : "unevaluated"},
+                            { role : "s"},
+                            { round: save.round }
                         ]
                     }
                 }).then((doc) => {
@@ -352,10 +351,9 @@ module.exports = (app, passport) => {
                 var result = []
                 users.findAll({
                     where:{
-                        status: {
-                            [Op.or]: ["unevaluated"]
-                        },
                         [Op.and]: [
+                            {status : "unevaluated"},
+                            { role : "s"},
                             { round: save.round }
                         ]
                     }
