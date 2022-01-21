@@ -30,11 +30,11 @@ module.exports = (app, passport) => {
         authPass,
         async (req, res) => {
             if (req.user.role === "su") {
-                console.log(req.user);
-                var role = req.body.role;
-                const userDetails = await users.getUserById(req.body)
-                userDetails.role = role;
-                await userDetails.save();
+                // console.log(req.user);
+                // var role = req.body.role;
+                // const userDetails = await users.getUserById(req.body)
+                // userDetails.role = role;
+                // await userDetails.save();
                 const details = await users.findOne({ where: { uuid: req.body.uuid } });
                 details.role = role;
                 details.save();
@@ -329,9 +329,18 @@ module.exports = (app, passport) => {
                 )
             );
 
-            if (save.status === "res" || save.status === "def") {
+            if (save.status === "res") {
                 var result = []
-                users.findOne({ include : question_answered_model}).then((doc) => {
+                users.findAll({
+                    where:{
+                        status: {
+                            [Op.or]: ["unevaluated"]
+                        },
+                        [Op.and]: [
+                            { round: save.round + 1 }
+                        ]
+                    }
+                }).then((doc) => {
                     doc.forEach((kid) => {
                         result.push(kid.username)
                     })
@@ -341,7 +350,16 @@ module.exports = (app, passport) => {
             }
             else {
                 var result = []
-                users.findAll({ include : question_answered_model }).then((doc) => {
+                users.findAll({
+                    where:{
+                        status: {
+                            [Op.or]: ["unevaluated"]
+                        },
+                        [Op.and]: [
+                            { round: save.round }
+                        ]
+                    }
+                }).then((doc) => {
                     doc.forEach((kid) => {
                         result.push(kid.username)
                     })

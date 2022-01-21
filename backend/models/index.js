@@ -10,7 +10,6 @@ const models = [
   require('./eventmodel')(sequelize),
   require('./question_answered_model')(sequelize),
 ]
-
 const {
   models: {
     users,
@@ -28,15 +27,12 @@ roundmodel.hasMany(question_set_model, {
 })
 question_set_model.belongsTo(roundmodel, { constraints: true })
 
-/*users.hasMany(question_answered_model, {
+users.hasMany(question_answered_model, {
   foreignKey: {
     type: DataTypes.UUID,
     allowNull: false
   },
   onDelete: 'CASCADE'
-})*/
-question_answered_model.belongsTo(users,{
-    onDelete : 'CASCADE'
 })
-
+question_answered_model.belongsTo(users);
 module.exports = { sequelize, models };

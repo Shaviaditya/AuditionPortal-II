@@ -1,7 +1,7 @@
 const { sequelize, models } = require('../models/index');
 const worker_connect = require('./controller')
 require('dotenv').config();
-const { models: { roundmodel, question_set_model} } = sequelize;
+const { models: { roundmodel, question_set_model } } = sequelize;
 
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
@@ -19,32 +19,27 @@ module.exports = (app, passport) => {
                 else
                     presetRounds = doc.length;
             })
-            const { time, quesText, ImageLink, AudioLink, quesType, options, score } = req.body;
-            await roundmodel.create({ roundNo: presetRounds + 1, time: time }).then((roundins)=>{
-                question_set_model.create({
-                    quesText: quesText,
-                    ImageLink: ImageLink,
-                    AudioLink: AudioLink,
-                    quesType: quesType,
-                    options: options,
-                    score: score,
-                    roundmodelRoundNo: presetRounds+1
-                })
+            const { questions, time } = req.body;
+            await roundmodel.create({ roundNo: presetRounds + 1, time: time }).then((roundins) => {
+                questions.forEach(element => {
+                    const { quesText, ImageLink, AudioLink, quesType, options, score } = element
+                    question_set_model.create({
+                        quesText: quesText,
+                        ImageLink: ImageLink,
+                        AudioLink: AudioLink,
+                        quesType: quesType,
+                        options: options,
+                        score: score,
+                        roundmodelRoundNo: presetRounds + 1
+                    })
+                });
+                const workers = worker_connect.get();
+                if (workers.eventlog(req.user, `added Round ${presetRounds + 1}`)) {
+                    return res.status(201).json({ success: true });
+                } else {
+                    return res.status(400).json({ success: false })
+                }
             });
-            await roundmodel.findOne({ where: { roundNo: presetRounds + 1 }, }).then(async (roundinfo) => {
-                await question_set_model.findOne({ where: { roundmodelRoundNo: roundinfo.roundNo } }).then(async (doc) => {
-                    try{
-                        const workers = worker_connect.get();
-                        if(workers.eventlog(req.user, `added Round ${presetRounds + 1}`)){
-                            return res.status(201).json({ success: true });
-                        }else {
-                            return res.status(400).json({ success: false })
-                        }
-                    } catch (err) {
-                        console.log(err);
-                    }
-                })
-            })
         } else {
             return res.status(401);
         }
@@ -54,11 +49,11 @@ module.exports = (app, passport) => {
     app.get("/getRounds", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             let ques_arr = [];
-            await roundmodel.findAll({ include : question_set_model}).then(async (roundinfo) => {
-                if(roundinfo){
+            await roundmodel.findAll({ include: question_set_model }).then(async (roundinfo) => {
+                if (roundinfo) {
                     res.status(201).json(roundinfo);
                 } else {
-                    res.status(400).json({success: "false"})
+                    res.status(400).json({ success: "false" })
                 }
             });
         } else {
@@ -70,10 +65,10 @@ module.exports = (app, passport) => {
     app.get("/getQuestions", authWall, async (req, res) => {
         if (req.user.role == 'm' || req.user.role == 'su') {
             await question_set_model.findAll().then(async (quizinfo) => {
-                if(roundinfo){
+                if (roundinfo) {
                     res.status(201).json(quizinfo);
                 } else {
-                    res.status(400).json({success: "false"})
+                    res.status(400).json({ success: "false" })
                 }
             });
         } else {
@@ -85,7 +80,7 @@ module.exports = (app, passport) => {
     app.post("/addQuestion", authWall, async (req, res) => {
         if (req.user.role == "su" || req.user.role == "m") {
             const { roundNo, quesText, ImageLink, AudioLink, quesType, options, score } = req.body;
-            roundmodel.findOne({where:{roundNo:roundNo}}).then((doc)=>{
+            roundmodel.findOne({ where: { roundNo: roundNo } }).then((doc) => {
                 question_set_model.create({
                     quesText: quesText,
                     ImageLink: ImageLink,
@@ -96,9 +91,9 @@ module.exports = (app, passport) => {
                     roundmodelRoundNo: roundNo,
                 })
             })
-            await question_set_model.findAll({ where: { roundmodelRoundNo: roundNo }}).then((doc) => {
+            await question_set_model.findAll({ where: { roundmodelRoundNo: roundNo } }).then((doc) => {
                 if (doc) {
-                    return res.status(201).json({success: true})
+                    return res.status(201).json({ success: true })
                 } else {
                     return res.status(400).json({ success: false })
                 }
@@ -107,6 +102,25 @@ module.exports = (app, passport) => {
             return res.sendStatus(401);
         }
     })
+    // Edit Question
+    app.put("/editQuestion/:id",authWall, async(req,res)=>{
+        if(req.user.role==="su" || res.user.role==="m"){
+            const Qid = req.params.id;
+            question_set_model.findOne({where:{quesId:Qid}}).then((doc) => {
+                const { quesText, ImageLink, AudioLink, quesType, options, score } = req.body;
+                doc.quesText = quesText
+                doc.ImageLink = ImageLink
+                doc.AudioLink = AudioLink
+                doc.quesType = quesType
+                doc.options = options
+                doc.score = score
+                doc.save();
+            })
+        } else {
+            res.sendStatus(401).json({"Access":"Unauthorized"});
+        }
+    })
+
 
     // Checked!
     app.delete("/removeQuestion/:id", authWall, async (req, res) => {
@@ -125,7 +139,7 @@ module.exports = (app, passport) => {
             }
         }
     })
-    
+
     // 
     app.delete("/removeRound", authWall, async (req, res) => {
         if (req.user.role == "su" || req.user.role == "m") {

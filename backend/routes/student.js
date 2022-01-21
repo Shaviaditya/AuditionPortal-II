@@ -23,6 +23,7 @@ module.exports = (app, passport) => {
             session: false
         }
     );
+    // each answer is processed at one time.
     app.put("/student/answer", authPass, async (req, res) => {
         // The Route is fot each answer a student shall give....
         // console.log(req.user)
