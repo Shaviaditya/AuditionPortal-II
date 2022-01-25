@@ -25,7 +25,7 @@ const config = require(__dirname + '/config/config.json')[env];
    }
    console.log(res);
 });
-*/
+*/ 
 
 //Middlewares
 app.use(express.json());
@@ -48,9 +48,8 @@ require('./routes/manageRoutes')(app, passport)
 require('./routes/superuser')(app, passport)
 require('./routes/student')(app, passport)
 
-
 models.sequelize.sync().then(async () => {
-    try {
+    try { 
         sequelize.authentication;
         console.log(`Database Connected`)
         if (process.env.ENABLE_WORKERS === '1') {

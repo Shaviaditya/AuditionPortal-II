@@ -47,7 +47,6 @@ module.exports = (app, passport) => {
     })
 
     app.get("/protected/getUsers", authPass, async (req, res) => {
-        // console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
                 let userArr = [];

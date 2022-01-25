@@ -25,12 +25,20 @@ module.exports = (app, passport) => {
             await roundmodel.create({ roundNo: presetRounds + 1, time: time }).then((roundins) => {
                 questions.forEach(element => {
                     const { quesText, ImageLink, AudioLink, quesType, options, score } = element
+                    const optionsValues="";
+                    if(Array.isArray(options)==true){
+                        options.forEach(e => {
+                            optionsValues = optionsValues + e;
+                        }) 
+                    } else {
+                        optionsValues = options;
+                    }
                     question_set_model.create({
                         quesText: quesText,
                         ImageLink: ImageLink,
                         AudioLink: AudioLink,
                         quesType: quesType,
-                        options: options,
+                        options: optionsValues,
                         score: score,
                         roundmodelRoundNo: presetRounds + 1
                     })

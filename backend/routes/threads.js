@@ -10,6 +10,6 @@ const mailing = (p1,p2,p3) => {
 }
 workerpool.worker({
     //Functions names
+    mailing,
     eventlog,
-    mailing
 })

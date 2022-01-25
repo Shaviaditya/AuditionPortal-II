@@ -5,8 +5,7 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const worker_connect = require('./controller')
 const { Op } = require('sequelize');
-const {eventlogger} = require('./eventLogger')
-// const question_answered_model = require('../models/question_answered_model');
+const {eventlogger} = require('./eventLogger');
 require('dotenv').config();
 const {
     models:
@@ -16,7 +15,7 @@ const {
         question_answered_model
     }
 } = sequelize;
-const workers = worker_connect.get();
+// const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
@@ -117,8 +116,9 @@ module.exports = (app, passport) => {
                     );
                     save.round = save.round;
                     save.status = "def";
-                    const worker3 = worker_connect.get();
-                    if (worker3.eventlog(req.user, `Stopped Round ${save.round}`)) {
+                    const { eventlog } = worker_connect.get();
+                    if (eventlog(req.user, `Stopped Round ${save.round}`)) {
+                        eventlogger(req.user, `Stopped Round ${save.round}`)
                         save = JSON.stringify(save);
                         fs.writeFileSync(
                             path.resolve(__dirname + "../../config/auditionConfig.json"),
@@ -242,23 +242,22 @@ module.exports = (app, passport) => {
                                 const csvWriter = createCsvWriter({
                                     path: path.resolve(__dirname + `../../result/Result_${round}.csv`),
                                     header: [
-                                        { id: 'name', title: 'Name' },
+                                        { id: 'username', title: 'Name' },
                                         { id: 'email', title: 'Email' },
                                         { id: 'phone', title: 'Phone' },
                                     ]
                                 });
-
+                                console.log(csvobject);
                                 csvWriter
                                     .writeRecords(csvobject)
                                     .then(() => console.log('The CSV file was written successfully'));
                                 const rejectedones = rejected.slice(0, -1);
-                                console.log(rejectedones);
+                                // console.log(rejectedones);
+                                var subject = "Thank you for your participation.";
+                                var text = "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>";
+                                var to = rejectedones
                                 const worker_Thread = worker_connect.get()
-                                worker_Thread.mailing(
-                                    "Thank you for your participation.",
-                                    "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>",
-                                    rejectedones
-                                )
+                                worker_Thread.mailing(subject,text,to);
                                 const results = [];
                                 fs.createReadStream(path.resolve(__dirname + `../../result/Result_${round}.csv`))
                                     .pipe(csv())
@@ -288,12 +287,15 @@ module.exports = (app, passport) => {
                                     })
                             })
                             .then(() => {
-                                if (workers.eventlog(req.user, `Result pushed for round ${round}`))
-                                    return res.status(201).send({ status: true });
-                                else
+                                const { eventlog } = worker_connect.get();
+                                if (eventlog(req.user, `Result pushed for round ${round}`)){
+                                    res.status(201).send({ status: true });
+                                    // const writeFilePromisified = util.promisify(fs.writeFile)
+                                    fs.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"), save);
+                                } else{
                                     res.sendStatus(500)
+                                }
                             })
-                        // fs.writeFileSync(path.resolve(__dirname + "../../config/auditionConfig.json"), save);
                     } else {
                         res.status(200).send({ status: false })
                     }
@@ -321,7 +323,7 @@ module.exports = (app, passport) => {
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
-
+            
             if (save.status === "res") {
                 var result = []
                 users.findAll({
@@ -329,13 +331,13 @@ module.exports = (app, passport) => {
                         [Op.and]: [
                             { status: "unevaluated" },
                             { role: "s" },
-                            { round: save.round }
+                            { round: save.round + 1 }
                         ]
                     }
-                }).then((doc) => {
-                    doc.forEach((kid) => {
-                        result.push(kid.username)
-                    })
+                }).then(async(doc) => {
+                    await Promise.all(doc.map( kid => {
+                        return result.push(kid.username)
+                    }))
                 }).then(() => {
                     res.status(200).send(result)
                 })
@@ -350,10 +352,10 @@ module.exports = (app, passport) => {
                             { round: save.round }
                         ]
                     }
-                }).then((doc) => {
-                    doc.forEach((kid) => {
-                        result.push(kid.username)
-                    })
+                }).then(async (doc) => {
+                    await Promise.all(doc.map( kid => {
+                        return result.push(kid.username)
+                    }))
                 }).then(() => {
                     res.status(200).send(result)
                 })
@@ -374,7 +376,7 @@ module.exports = (app, passport) => {
                     uuid: id
                 }
             }).then((doc) => {
-                doc.round += 1
+                doc.round = 1
                 doc.save();
                 res.sendStatus(201)
             })
