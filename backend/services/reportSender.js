@@ -1,8 +1,6 @@
 const nodemailer = require('nodemailer');
 let sendMail = async (subject, text, to) => {
     try {
-        // console.log(subject)
-        // console.log(text)
         console.log("to --- " + to);
         const transporter = nodemailer.createTransport({
             host: "smtp.mailgun.org",
@@ -28,7 +26,7 @@ let sendMail = async (subject, text, to) => {
             subject:subject,
             html: text,
         };
-        // console.log(message);
+        console.log(message);
         transporter.sendMail(message, (err,data) => {
             if(err){
                 console.log(err)
@@ -40,7 +38,6 @@ let sendMail = async (subject, text, to) => {
     } catch (err) {
         console.log(err);
     }
-    // workerpool.worker({sendMail})
 }
 module.exports = {
      sendMail  
