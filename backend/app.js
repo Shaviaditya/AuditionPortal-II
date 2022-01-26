@@ -38,9 +38,8 @@ app.use('/protected',manageRouter)
 app.use('/student',studentRouter)
 require('./routes/superuser')(app, passport)
 
-
 models.sequelize.sync().then(async () => {
-    try {
+    try { 
         sequelize.authentication;
         console.log(`Database Connected`)
         // if (process.env.ENABLE_WORKERS === '1') {

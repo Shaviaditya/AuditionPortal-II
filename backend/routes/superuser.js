@@ -40,7 +40,7 @@ module.exports = (app, passport) => {
                     uuid: id
                 }
             }).then((doc) => {
-                doc.round += 1
+                doc.round = 1
                 doc.save();
                 res.sendStatus(201)
             })

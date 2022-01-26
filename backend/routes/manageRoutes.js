@@ -97,7 +97,6 @@ manageRouter.get("/protected/getUsers", authWall, async (req, res) => {
         }
     }
 });
-
 manageRouter.put("/protected/update", authWall, async (req, res) => {
     var a = req.body;
     if (
