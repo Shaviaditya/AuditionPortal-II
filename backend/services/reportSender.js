@@ -1,8 +1,14 @@
 const nodemailer = require('nodemailer');
+const {parentPort,isMainThread} = require('worker_threads');
+if(!isMainThread){
+    parentPort.on('message',async (data)=>{
+        console.log(data)
+        const package = JSON.parse(JSON.stringify(data))
+        parentPort.postMessage(await sendMail(package.subject,package.text,package.list))
+    })
+}
 let sendMail = async (subject, text, to) => {
     try {
-        // console.log(subject)
-        // console.log(text)
         console.log("to --- " + to);
         const transporter = nodemailer.createTransport({
             host: "smtp.mailgun.org",
@@ -28,19 +34,19 @@ let sendMail = async (subject, text, to) => {
             subject:subject,
             html: text,
         };
-        // console.log(message);
         transporter.sendMail(message, (err,data) => {
             if(err){
                 console.log(err)
             } else {
                 console.log(`Message sent success!!!`)
+                return `Message sent success!!!`;
             }
         });
 
     } catch (err) {
         console.log(err);
+        return err;
     }
-    // workerpool.worker({sendMail})
 }
 module.exports = {
      sendMail  

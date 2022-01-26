@@ -8,12 +8,14 @@ module.exports = function (passport) {
 
     passport.serializeUser((user, done) => {
         //done(null, user.id);
+        console.log(`Hello1`)
         users.getUserById(user).then((data) => {
             done(null, data);
         })
     })
 
     passport.deserializeUser((user, done) => {
+        console.log(`Hello2`)
         users.getUserById(user).then((user) => {
             done(null, user);
 
@@ -26,6 +28,7 @@ module.exports = function (passport) {
         clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET
     }, async (accessToken, refreshToken, profile, done) => {
         // console.log(profile);
+        console.log(`Hello3`)
         await users.getUserByEmail(profile.emails[0].value).then(async (currentUser) => {
             if (currentUser) {
                 console.log('Existing User: ' + currentUser)
