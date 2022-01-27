@@ -119,7 +119,7 @@ module.exports = (app, passport) => {
             console.log(doc)
             if ((req.user.role === 's' && doc.round == save.round && save.status === "ong") || (req.user.role === 'su' || req.user.role === 'm')) {
                 if (doc.time === '0') {
-                    doc.time = new Date().getTime() + save.time * 6000 + 2000;
+                    doc.time = new Date().getTime() + save.time * 60000 + 2000;
                     doc.save();
                     console.log(doc)
                     roundmodel.findOne({
