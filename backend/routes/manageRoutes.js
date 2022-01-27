@@ -1,13 +1,14 @@
 // Tested all routes 
-const { user } = require('pg/lib/defaults');
-const eventlogger = require('./eventLogger')
+// const worker_connect = require('./controller')
 const { sequelize } = require('../models');
+const { eventlogger } = require('./eventLogger');
+// const question_answered_model = require('../models/question_answered_model');
 require('dotenv').config();
 const {
     models:
     {
         users,
-        dashmodel
+        question_answered_model
     }
 } = sequelize;
 module.exports = (app, passport) => {
@@ -16,20 +17,26 @@ module.exports = (app, passport) => {
     require("../passport/passportgithub")(passport);
 
     const authPass = passport.authenticate("jwt", { session: false });
-    app.get("/protected/getUsers", authPass, async (req, res) => {
+    app.post("/protected/getUser", authPass, async (req, res) => {
         console.log(req.user);
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await dashmodel.findAll().then((data) => {
-                    return res.status(200).json({ data: data, user: req.user.username });
+                let userArr = [];
+                // Eager Loading not working so applied Lazy Loading based on Promises
+                await users.findOne({ where : { uuid: req.body.uuid }}).then(async (e) => {
+                    if(!e){res.sendStatus(404)}
+                    await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
+                        return userArr.push([e,{"responses":data}]);
+                    })
                 })
+                return res.status(200).json({ data: userArr, user: req.user.username });
             } catch (e) {
                 res.sendStatus(404);
                 console.log(e);
             }
         } else {
             try {
-                const data = await users.getUserById(req.user);
+                const data = await users.findOne({ where: { uuid: req.user.uuid } });
                 data.flag = true;
                 data.save();
                 return res.status(200).json(data);
@@ -40,20 +47,26 @@ module.exports = (app, passport) => {
         }
     })
 
-    app.post("/protected/getUser", authPass, async (req, res) => {
-        console.log(req.user);
+    app.get("/protected/getUsers", authPass, async (req, res) => {
         if (req.user.role === "m" || req.user.role === "su") {
             try {
-                await dashmodel.findOne({ where: { uuid: req.body.uuid } }).then((data) => {
-                    return res.status(200).json({ data: data, user: req.user.username });
+                let userArr = [];
+                // Eager Loading not working so applied Lazy Loading based on Promises
+                await users.findAll({ where : { role: "s"}}).then(async (d1) => {
+                    await Promise.all(d1.map(async e => {
+                        await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
+                            return userArr.push([e,{"responses":data}]);
+                        }) 
+                    }))
                 })
+                return res.status(200).json({ data: userArr, user: req.user.username });
             } catch (e) {
                 res.sendStatus(404);
                 console.log(e);
             }
         } else {
             try {
-                const data = await users.getUserById(req.user);
+                const data = await users.findOne({ where: { uuid: req.user.uuid } });
                 data.flag = true;
                 data.save();
                 return res.status(200).json(data);
@@ -73,10 +86,11 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m" && req.user.clearance >= a.round)
             ) {
-                const entry = await dashmodel.findOne({ where: { uid: req.body.uid } })
+                const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 entry.status = a.status
-                entry.save().then(() => {
-                    if (eventlogger(req.user, `Changed selection status for ${a.name} to ${a.status}`))
+                entry.save().then(async () => {
+                    // const w1 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Changed selection status for ${a.username} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -96,12 +110,12 @@ module.exports = (app, passport) => {
                 req.user.role === "su" ||
                 (req.user.role === "m")
             ) {
-                const entry = await dashmodel.findOne({ where: { uid: req.body.uuid } })
-                if(entry.feedback.length == 0){
+                const entry = await users.findOne({ where: { uuid: req.body.uuid } })
+                if (entry.feedback.length == 0) {
                     let arr = []
                     arr.push(req.body.feedback);
                     entry.feedback = arr;
-                } else { 
+                } else {
                     let arr = [];
                     entry.feedback.forEach(el => {
                         arr.push(el);
@@ -110,8 +124,9 @@ module.exports = (app, passport) => {
                     entry.feedback = arr;
                 }
                 // console.log(entry.feedback);
-                entry.save().then(() => {
-                    if (eventlogger(req.user, `Added feedback for ${entry.name}`))
+                entry.save().then(async () => {
+                    // const w2 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Added feedback for ${entry.name}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -121,6 +136,4 @@ module.exports = (app, passport) => {
             }
         }
     );
-
-
 };

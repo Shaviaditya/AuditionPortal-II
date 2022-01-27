@@ -1,5 +1,4 @@
 const { sequelize, models } = require('../models/index');
-const eventlogger = require('./eventLogger');
 const fs = require("fs");
 const path = require('path');
 const { all, Op } = require('sequelize');
@@ -7,14 +6,13 @@ require('dotenv').config();
 const {
     models: {
         users,
-        dashmodel,
         roundmodel,
-        answermodel,
         question_answered_model,
         question_set_model
     }
 } = sequelize;
 var ansArr = [];
+// const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
@@ -24,7 +22,10 @@ module.exports = (app, passport) => {
             session: false
         }
     );
+    // each answer is processed at one time.
     app.put("/student/answer", authPass, async (req, res) => {
+        // The Route is fot each answer a student shall give....
+        // console.log(req.user)
         if (req.user.role === "s") {
             var { qid, qtype, answer, roundNo, ansLink } = req.body;
             let currenttime = new Date().getTime();
@@ -33,84 +34,114 @@ module.exports = (app, passport) => {
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
-            try {
-                await dashmodel.findOne({
-                    where: {
-                        uid: req.user.uuid
-                    }
-                }).then(async (student) => {
-
-                    const dashId = await answermodel.findOne({
+            // Finds his dashboard 
+            await users.findOne({
+                where: {
+                    uuid: req.user.uuid
+                }
+            }).then(async (student) => {
+                // console.log(qid);
+                const data1 = await question_set_model.findOne({ where: { quesId : qid }})
+                const roundNo = data1.roundmodelRoundNo
+                // console.log(data1)
+                if (save.round === roundNo && save.status === "ong" &&
+                    student.time >= currenttime && student.round === roundNo) {
+                    // Checks whether the student has answered any rounds or not.....
+                    await question_answered_model.findOne({
                         where: {
-                            userDashId: student.uid
+                            userUuid: student.uuid,
+                            roundInfo: roundNo
                         }
-                    })
-                    if (!dashId) {
-                        await answermodel.create({
-                            roundNo: roundNo,
-                            userDashId: student.uid,
-                            dashmodelId: student.id,
-                        }).then(async (doc) => {
-                            try {
-                                question_answered_model.create({
-                                    answermodelId: doc.id,
-                                    userAnswerId: doc.userDashId,
-                                    qid: qid,
-                                    qtype: qtype,
-                                    answer: answer
-                                }).then((ans) => {
-                                    res.sendStatus(201)
-                                })
-                            } catch (err) {
-                                console.log(err);
-                            }
-                        })
-                    } else {
-                        await question_answered_model.findOne({
-                            where: {
-                                [Op.and]: [
-                                    { qid: qid },
-                                    { userAnswerId: req.user.uuid },
-                                ]
-                            }
-                        }).then(async (check) => {
-                            if (!check) {
-                                await question_answered_model.findOne({
-                                    where: {
-                                        userAnswerId: req.user.uuid,
-                                    }
-                                }).then(async (doc) => {
+                    }).then(async roundAnswered => {
+                        // Say he hasn't then saving this current round as his first one.... 
+                        // Strictly for the first question of any round.
+                        if (!roundAnswered) {
+                            await question_answered_model.create({
+                                userUuid: student.uuid,
+                                roundInfo: roundNo,
+                                qid: qid,
+                                qtype: qtype,
+                                answer: answer,
+                                ansLink: ansLink,
+                            }).then((ans) => {
+                                res.sendStatus(201)
+                            })
+                        } else {
+                            await question_answered_model.findOne({
+                                where: {
+                                    userUuid: student.uuid,
+                                    qid: qid
+                                }
+                            }).then(async (check) => {
+                                if (!check) {
                                     await question_answered_model.create({
-                                        answermodelId: doc.answermodelId,
-                                        userAnswerId: doc.userAnswerId,
+                                        userUuid: student.uuid,
+                                        roundInfo: roundNo,
                                         qid: qid,
                                         qtype: qtype,
-                                        answer: answer
+                                        answer: answer,
+                                        ansLink: ansLink,
                                     }).then((ans) => {
-                                        res.sendStatus(201)
+                                        res.sendStatus(201).json(JSON.stringify(ans));
                                     })
-                                })
-                            } else {
-                                check.qid = qid,
-                                    check.qtype = qtype,
-                                    check.answer = answer
-                                check.save();
-                            }
-                        })
-                    }
-                })
-            } catch (error) {
-                console.log(error)
-            }
+                                } else {
+                                    // Updates the answer he will give.
+                                    check.qid = qid,
+                                        check.qtype = qtype,
+                                        check.answer = answer,
+                                        check.ansLink = ansLink
+                                    check.save();
+                                }
+                                res.sendStatus(201)
+                            })
+                        }
+                    })
+                } else {
+                    res.sendStatus(401);
+                }
+            })
         } else {
             res.sendStatus(401);
         }
     })
 
-    app.get('/getAns', authPass, async (req, res) => {
-        const result = await dashmodel.findAll({ include: [{ model: answermodel, include: [question_answered_model] }] });
-        console.log(JSON.stringify(result));
-        return res.send(result);
+    app.get('/student/getRound', authPass, async (req, res) => {
+        let save = JSON.parse(
+            fs.readFileSync(
+                path.resolve(__dirname + "../../config/auditionConfig.json")
+            )
+        );
+        users.findOne({
+            where: {
+                uuid: req.user.uuid
+            }
+        }).then((doc) => {
+            console.log(doc)
+            if ((req.user.role === 's' && doc.round == save.round && save.status === "ong") || (req.user.role === 'su' || req.user.role === 'm')) {
+                if (doc.time === '0') {
+                    doc.time = new Date().getTime() + save.time * 60000 + 2000;
+                    doc.save();
+                    console.log(doc)
+                    roundmodel.findOne({
+                        where: {
+                            roundNo: save.round
+                        }
+                    }).then((round) => {
+                        if (!round) res.sendStatus(404);
+                        res.status(200).json({ round: round, time: doc.time });
+                    })
+                } else {
+                    roundmodel.findOne({
+                        where: {
+                            roundNo: save.round
+                        }
+                    }).then((round) => {
+                        if (!round) res.sendStatus(404);
+                        res.status(200).json({ round: round, time: doc.time });
+                    })
+                }
+            }
+        })
     })
 
     app.get("/student/getAnswers", authPass, (req, res) => {
@@ -120,32 +151,32 @@ module.exports = (app, passport) => {
             )
         );
         question_answered_model.findAll({
-            where:{
-                userAnswerId : req.user.uuid
+            where: {
+                userUuid: req.user.uuid
             }
         }).then(async (doc) => {
-            if(!doc) { res.sendStatus(401) }
-            await Promise.all(doc.map(async (ans)=>{
+            if (!doc) { res.sendStatus(401) }
+            await Promise.all(doc.map(async (ans) => {
                 await question_set_model.findOne({
-                    where:{
-                        roundId : ans.qid
+                    where: {
+                        quesId: ans.qid
                     }
-                }).then(async (doc1)=>{
-                    if(doc1.roundmodelId === save.round){
+                }).then(async (doc1) => {
+                    if (doc1.roundmodelRoundNo === save.round) {
                         return ansArr.push(ans);
-                    } 
+                    }
                 })
             }))
-            if(ansArr.length!=0) { res.json ({answers: ansArr })}
-            else {res.sendStatus(404)}
+            if (ansArr.length != 0) { res.json({ answers: ansArr }) }
+            else { res.sendStatus(404) }
         })
     })
 
 
     app.get("/student/get", authPass, async (req, res) => {
-        await dashmodel.findOne({
+        await users.findOne({
             where: {
-                uid: req.user.uuid
+                uuid: req.user.uuid
             }
         }).then((kid) => {
             if (!kid) { res.sendStatus(404) }
@@ -160,16 +191,17 @@ module.exports = (app, passport) => {
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
-            await dashmodel.findOne({
+            await users.findOne({
                 where: {
-                    uid: req.body.uid
+                    uuid: req.body.uuid
                 }
             }).then(async (kid) => {
                 if (!kid) res.sendStatus(404);
                 kid.round = save.round
                 kid.status = "unevaluated"
-                kid.save().then(() => {
-                    if (eventlogger(req.user, `Used the wildcard feature to push ${kid.name} to Round ${save.round}`))
+                kid.save().then(async () => {
+                    // const worker1 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
                         res.sendStatus(200)
                     else res.sendStatus(500)
                 })

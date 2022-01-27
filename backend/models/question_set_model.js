@@ -1,11 +1,7 @@
 const { UUIDV4 , DataTypes } = require("sequelize")
 module.exports = (sequelize) => {
   const question_set_model = sequelize.define("question_set_model",{
-    roundmodelId: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    roundId:{
+    quesId:{
       type: DataTypes.UUID,
       defaultValue: UUIDV4,
     },
@@ -13,7 +9,11 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false
     },  
-    quesLink: {
+    ImageLink: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    AudioLink: {
       type: DataTypes.STRING,
       allowNull: true
     },

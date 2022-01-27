@@ -1,6 +1,12 @@
 const nodemailer = require('nodemailer');
-module.exports = {
-    sendMail:  async (subject, text, to) => {
+const { isMainThread,parentPort } = require('worker_threads');
+if(!isMainThread){
+    parentPort.on('message',async(data)=>{
+        parentPort.postMessage(await sendMail(data.subject,data.text,data.list))
+    })
+}
+let sendMail = async (subject, text, to) => {
+    {
         try {
             console.log("to --- " + to);
             const transporter = nodemailer.createTransport({
@@ -40,4 +46,7 @@ module.exports = {
             console.log(err);
         }
     }
+}
+module.exports = {
+     sendMail  
 };

@@ -1,0 +1,132 @@
+Testing script
+
+
+//Localuser Login
+{
+   "username":"mouli",
+   "email":"mouli@mail.com",
+   "password":"mouli"
+}
+
+//Superuser Login
+{
+   "username":"rohan",
+   "email":"rohan@mail.com",
+   "password":"rohan"
+}
+
+//Sample Round Addiiton.
+{
+   "time":60,
+   "questions":[
+       {
+            "quesText":"What is React?",
+            "options":"1,2,3,4",
+            "quesType":"Subjective",
+            "score":10
+       },
+       {
+            "quesText":"What is Vuetify?",
+            "options":"1,2,3,4",
+            "quesType":"Subjective",
+            "score":10
+       },
+       {
+            "quesText":"What is Angular?",
+            "options":"1,2,3,4",
+            "quesType":"Subjective",
+            "score":10
+       }
+   ]
+}
+
+
+//Sample Question addition to a specific round.
+{
+   "roundNo":1,
+   "quesText":"What is React?",
+   "options":"1,2,3,4",
+   "quesType":"Subjective",
+   "score":10
+}
+
+{
+   "roundNo":1,
+   "quesText":"What is EEPROM?",
+   "quesType":"Subjective",
+   "score":15
+}
+
+{
+   "qid":"a6bca421-e217-49f5-8f60-e9f8b46ff5e4",
+   "answer":"1"
+}
+
+// Edit a whole round and its questions
+
+{
+        "roundNo": 1,
+        "time": 120,
+        "createdAt": "2022-01-21T17:09:31.783Z",
+        "updatedAt": "2022-01-21T17:09:31.783Z",
+        "questions": [
+            {
+                "id": 4,
+                "quesId": "773206e9-ddc2-4ce4-baf7-a19768858b2a",
+                "quesText": "What is GunJS?",
+                "ImageLink": null,
+                "AudioLink": null,
+                "quesType": "Subjective",
+                "options": "1,2,3,4",
+                "score": 10,
+                "createdAt": "2022-01-21T17:10:42.456Z",
+                "updatedAt": "2022-01-21T17:16:04.064Z",
+                "roundmodelRoundNo": 1
+            },
+            {
+                "id": 3,
+                "quesId": "f50654f0-f4e1-42ff-99cb-b29223c005bd",
+                "quesText": "What is AngularJS?",
+                "ImageLink": "http://image.com",
+                "AudioLink": null,
+                "quesType": "Image",
+                "options": "1,2,3,4",
+                "score": 15,
+                "createdAt": "2022-01-21T17:09:31.787Z",
+                "updatedAt": "2022-01-21T17:09:31.787Z",
+                "roundmodelRoundNo": 1
+            },
+            {
+                "id": 2,
+                "quesId": "cdea95e8-3b05-444c-84e0-0a88cc4c5f7f",
+                "quesText": "What is Ionic?",
+                "ImageLink": null,
+                "AudioLink": "http://cloudaudio.com",
+                "quesType": "Audio",
+                "options": "1,2,3,4",
+                "score": 25,
+                "createdAt": "2022-01-21T17:09:31.787Z",
+                "updatedAt": "2022-01-21T17:09:31.787Z",
+                "roundmodelRoundNo": 1
+            },
+            {
+                "id": 1,
+                "quesId": "85f7c1e8-3681-48f4-9526-01bfa45c638a",
+                "quesText": "What is CORs error often encountered with MERN Projects?",
+                "ImageLink": null,
+                "AudioLink": null,
+                "quesType": "Subjective",
+                "options": "1,2,3,4",
+                "score": 11,
+                "createdAt": "2022-01-21T17:09:31.787Z",
+                "updatedAt": "2022-01-21T17:09:31.787Z",
+                "roundmodelRoundNo": 1
+            }
+        ]
+    }
+{
+   "qid":"",
+   "qtype":"Subjective",
+   "answer":"1",
+   "ansLink":""
+}

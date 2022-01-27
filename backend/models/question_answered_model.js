@@ -7,11 +7,11 @@ module.exports = (sequelize) => {
     },
     answer: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     qtype: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     score: {
       type: DataTypes.INTEGER,
@@ -21,8 +21,8 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    userAnswerId : {
-      type: DataTypes.STRING,
+    roundInfo: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   });
