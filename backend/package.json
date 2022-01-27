@@ -35,6 +35,6 @@
     "pg-hstore": "^2.3.4",
     "pgtools": "^0.3.2",
     "sequelize": "^6.8.0",
-    "workerpool": "^6.1.5"
+    "workerpool": "^6.2.0"
   }
 }

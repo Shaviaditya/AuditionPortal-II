@@ -3,8 +3,6 @@ const multer = require('multer');
 const express = require('express');
 const router = express.Router();
 const upload = require('../services/upload')
-const workerpool = require('workerpool')
-const pool = workerpool.pool();
 const { models: { eventmodel } } = sequelize;
 require('dotenv').config();
 let clients = [];
@@ -33,11 +31,7 @@ const eventHandler = async (req, res, next) => {
 }
 
 function sendEventsToAll(newLog) {
-    console.log(newLog);
-    console.log(clients);
-    console.log(clients);
     clients.forEach(c => c.res.write(`data: [${JSON.stringify(newLog)}]\n\n`))
-    console.log(clients);
     return true;
 }
 

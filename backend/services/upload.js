@@ -16,8 +16,6 @@ const storage = new CloudinaryStorage({
         allowedFormats: ["jpg", "png", "jpeg", "ogg", "mp3", "wav", "txt", "zip", "cpp"],
         resource_type: "auto"
     }
-
-    //  transformation: [{ width: 500, height: 500, crop: "limit" }],
 });
 const upload = multer({ storage: storage });
 module.exports = upload;

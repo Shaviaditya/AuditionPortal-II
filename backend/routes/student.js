@@ -2,7 +2,6 @@ const { sequelize, models } = require('../models/index');
 const fs = require("fs");
 const path = require('path');
 const { all, Op } = require('sequelize');
-const worker_connect = require('./controller');
 require('dotenv').config();
 const {
     models: {
@@ -200,9 +199,9 @@ module.exports = (app, passport) => {
                 if (!kid) res.sendStatus(404);
                 kid.round = save.round
                 kid.status = "unevaluated"
-                kid.save().then(() => {
-                    const worker1 = worker_connect.get();
-                    if (worker1.eventlog(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
+                kid.save().then(async () => {
+                    // const worker1 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
                         res.sendStatus(200)
                     else res.sendStatus(500)
                 })

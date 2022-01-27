@@ -1,6 +1,7 @@
 // Tested all routes 
-const worker_connect = require('./controller')
+// const worker_connect = require('./controller')
 const { sequelize } = require('../models');
+const { eventlogger } = require('./eventLogger');
 // const question_answered_model = require('../models/question_answered_model');
 require('dotenv').config();
 const {
@@ -87,9 +88,9 @@ module.exports = (app, passport) => {
             ) {
                 const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 entry.status = a.status
-                entry.save().then(() => {
-                    const w1 = worker_connect.get();
-                    if (w1.eventlog(req.user, `Changed selection status for ${a.username} to ${a.status}`))
+                entry.save().then(async () => {
+                    // const w1 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Changed selection status for ${a.username} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -123,9 +124,9 @@ module.exports = (app, passport) => {
                     entry.feedback = arr;
                 }
                 // console.log(entry.feedback);
-                entry.save().then(() => {
-                    const w2 = worker_connect.get();
-                    if (w2.eventlog(req.user, `Added feedback for ${entry.name}`))
+                entry.save().then(async () => {
+                    // const w2 = worker_connect.get();
+                    if (! await eventlogger(req.user, `Added feedback for ${entry.name}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });

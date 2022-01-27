@@ -2,7 +2,6 @@ const express = require('express')
 const passport = require('passport');
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
-const worker_connect = require('./routes/controller')
 let app = express();
 const { router } = require('./routes/eventLogger')
 const models = require('./models/index')
@@ -52,10 +51,6 @@ models.sequelize.sync().then(async () => {
     try { 
         sequelize.authentication;
         console.log(`Database Connected`)
-        if (process.env.ENABLE_WORKERS === '1') {
-            const options = { minWorkers: 'max' }
-            await worker_connect.init(options);
-        }
         app.listen(PORT, async () => {
             console.log(`Server up on http://localhost:${PORT}`)
         })

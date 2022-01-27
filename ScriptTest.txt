@@ -3,9 +3,9 @@ Testing script
 
 //Localuser Login
 {
-   "username":"Mouli",
+   "username":"mouli",
    "email":"mouli@mail.com",
-   "password":"Mouli"
+   "password":"mouli"
 }
 
 //Superuser Login
@@ -124,3 +124,9 @@ Testing script
             }
         ]
     }
+{
+   "qid":"",
+   "qtype":"Subjective",
+   "answer":"1",
+   "ansLink":""
+}
