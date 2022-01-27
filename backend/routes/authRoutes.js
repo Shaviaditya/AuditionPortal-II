@@ -1,32 +1,27 @@
 const { sequelize } = require('../models');
-// const users = require('../models/users')(sequelize, DataTypes)
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { models: { users, dashmodel } } = sequelize;
+const { models: { users } } = sequelize;
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
     require("../passport/passportgoogle")(passport);
     require("../passport/passportgithub")(passport);
     app.post('/auth/signup', async (req, res) => {
         const { username, email, password, role } = req.body;
-        await users.create({ username, email, password, role })
-            .then(async (details) => {
-                await users.createUser(details).then( async (user) => {
-                    if (!user) {
-                        return res.json({ success: false, message: "User is not registered.." });
-                    } else {
-                        if (user.role === "s") {
-                            await dashmodel.create({
-                                uid: user.uuid,
-                                name: user.username,
-                                email: user.email
-                            });
-
+        if (role === "su") {
+            return res.sendStatus(403).json({ success: false })
+        } else {
+            await users.create({ username, email, password, role })
+                .then(async (details) => {
+                    await users.createUser(details).then(async (user) => {
+                        if (!user) {
+                            return res.json({ success: false, message: "User is not registered.." });
+                        } else {
+                            return res.sendStatus(201).json({ success: true, message: "User is registered.." });
                         }
-                        return res.json({ success: true, message: "User is registered.." });
-                    }
+                    })
                 })
-            })
+        }
     })
 
 
@@ -61,35 +56,11 @@ module.exports = (app, passport) => {
                             });
                         } else {
                             res.cookie('jwt', token);
-                            await dashmodel.findOne({ where: { email: payload.email } }).then(async (doc) => {
-                                if (!doc) {
-                                    await dashmodel.create({
-                                        uid: payload.uuid,
-                                        name: payload.username,
-                                        email: payload.email,
-                                    })
-                                    res.status(201).json({
-                                        success: true,
-                                        token: "Bearer " + token,
-                                        user: "Created"
-                                    });
-                                    //res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                                } else {
-                                    res.status(201).json({
-                                        success: true,
-                                        token: "Bearer " + token,
-                                        user: "exists already"
-                                    });
-                                    // if (req.user.mode === 'google')
-                                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                                    // else
-                                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
-                                }
-                            })
-                            // res.json({
-                            //     success: true,
-                            //     token: "Bearer " + token,
-                            // });
+                            res.status(201).json({
+                                success: true,
+                                token: "Bearer " + token,
+                                user: "exists already"
+                            });
                         }
                     } else {
                         return res.json({
@@ -133,35 +104,11 @@ module.exports = (app, passport) => {
             };
             var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
             res.cookie('jwt', token);
-            await dashmodel.findOne({ where: { email: req.user.email } }).then(async (doc) => {
-                if (!doc) {
-                    await dashmodel.create({
-                        uid: req.user.uuid,
-                        name: req.user.username,
-                        email: req.user.email,
-                    })
-                    res.status(201).json({
-                        success: true,
-                        token: "Bearer " + token,
-                        user: "Created"
-                    });
-                    //res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                } else {
-                    res.status(201).json({
-                        success: true,
-                        token: "Bearer " + token,
-                        user: "exists already"
-                    });
-                    // if (req.user.mode === 'google')
-                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                    // else
-                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
-                }
-            })
-            // res.status(201).json({
-            //     success: true,
-            //     token: "Bearer " + token,
-            // });
+            res.status(201).json({
+                success: true,
+                token: "Bearer " + token,
+                user: "exists already"
+            });
         });
     app.get("/auth/github", passport.authenticate("github"));
 
@@ -177,35 +124,11 @@ module.exports = (app, passport) => {
             };
             var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
             res.cookie('jwt', token);
-            await dashmodel.findOne({ where: { email: req.user.email } }).then(async (doc) => {
-                if (!doc) {
-                    await dashmodel.create({
-                        uid: req.user.uuid,
-                        name: req.user.username,
-                        email: req.user.email,
-                    })
-                    res.status(201).json({
-                        success: true,
-                        token: "Bearer " + token,
-                        user: "Created"
-                    });
-                    //res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                } else {
-                    res.status(201).json({
-                        success: true,
-                        token: "Bearer " + token,
-                        user: "exists already"
-                    });
-                    // if (req.user.mode === 'google')
-                    // res.redirect(`${process.env.FRONTEND}?token=${token}`);
-                    // else
-                    // res.redirect(`${process.env.FRONTEND}register?error=email`);
-                }
-            })
-            // res.status(201).json({
-            //     success: true,
-            //     token: "Bearer " + token,
-            // });
+            res.status(201).json({
+                success: true,
+                token: "Bearer " + token,
+                user: "exists already"
+            });
         });
 
 }
