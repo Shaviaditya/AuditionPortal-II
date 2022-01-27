@@ -27,10 +27,10 @@ module.exports = (app, passport) => {
       console.log(details);
       // const w1 = worker_connect.get();
       if (
-        ! await eventlogger(
+        !(await eventlogger(
           req.user,
           `changed the role for ${details.username} to ${role}`
-        )
+        ))
       )
         res.sendStatus(201).json({ success: "true" });
       else res.sendStatus(500).json({ success: "false" });
@@ -48,10 +48,10 @@ module.exports = (app, passport) => {
       console.log(details);
       // const worker2 = worker_connect.get();
       if (
-        ! await eventlogger(
+        !(await eventlogger(
           req.user,
           `Set Clearance for ${details.username} to ${clearance}`
-        )
+        ))
       )
         res.sendStatus(201).json({ success: "true" });
       else res.sendStatus(500).json({ success: "false" });
@@ -77,7 +77,7 @@ module.exports = (app, passport) => {
           } else {
             save.time = doc.time;
             // const { eventlog } = worker_connect.get();
-            if (!await eventlogger(req.user, `Pushed Round ${save.round}`)) {
+            if (!(await eventlogger(req.user, `Pushed Round ${save.round}`))) {
               // eventlogger(req.user, `Pushed Round ${save.round}`)
               save = JSON.stringify(save);
               fs.writeFileSync(
@@ -106,7 +106,7 @@ module.exports = (app, passport) => {
         save.round = save.round;
         save.status = "def";
         // const { eventlog } = worker_connect.get();
-        if (! await eventlogger(req.user, `Stopped Round ${save.round}`)) {
+        if (!(await eventlogger(req.user, `Stopped Round ${save.round}`))) {
           save = JSON.stringify(save);
           fs.writeFileSync(
             path.resolve(__dirname + "../../config/auditionConfig.json"),
@@ -161,10 +161,10 @@ module.exports = (app, passport) => {
             .then(async () => {
               // const worker4 = worker_connect.get()
               if (
-                ! await eventlogger(
+                !(await eventlogger(
                   req.user,
                   `Extended Time for everyone by 10 minutes`
-                )
+                ))
               )
                 res.sendStatus(202);
               else res.sendStatus(500);
@@ -177,12 +177,12 @@ module.exports = (app, passport) => {
           kidItem.save().then(async () => {
             // const worker5 = worker_connect.get();
             if (
-              ! await eventlogger(
+              !(await eventlogger(
                 req.user,
                 `Extended Time for ${kidItem.name} by 10 minutes to ${new Date(
                   kidItem.time
                 ).toString.substring(0, 24)}`
-              )
+              ))
             )
               res.sendStatus(202);
             else res.sendStatus(500);
@@ -205,9 +205,13 @@ module.exports = (app, passport) => {
         status: "res",
       });
       var csvobject = [];
+      let datadump;
       var rejected = "";
       var unevaluated = "";
-      await fs.promises.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"),save);
+      await fs.promises.writeFile(
+        path.resolve(__dirname + "../../config/auditionConfig.json"),
+        save
+      );
       await users
         .findAll({
           where: {
@@ -218,7 +222,7 @@ module.exports = (app, passport) => {
           },
         })
         .then(async (userdoc) => {
-          console.log(userdoc);
+          datadump = userdoc;
           if (userdoc.length) {
             fs.closeSync(
               fs.openSync(
@@ -248,7 +252,7 @@ module.exports = (app, passport) => {
                 });
               })
               .then(async () => {
-                const csvWriter = createCsvWriter({
+                let csvWriter = createCsvWriter({
                   path: path.resolve(
                     __dirname + `../../result/Result_${round}.csv`
                   ),
@@ -258,7 +262,6 @@ module.exports = (app, passport) => {
                     { id: "phone", title: "Phone" },
                   ],
                 });
-                // console.log(csvobject);
                 csvWriter
                   .writeRecords(csvobject)
                   .then(() =>
@@ -325,10 +328,10 @@ module.exports = (app, passport) => {
               .then(async () => {
                 // const { eventlog } = worker_connect.get();
                 if (
-                  ! await eventlogger(
+                  !(await eventlogger(
                     req.user,
                     `Result pushed for round ${round}`
-                  )
+                  ))
                 ) {
                   // console.log(save)
                   // const writeFilePromisified = util.promisify(fs.writeFile)
@@ -336,7 +339,6 @@ module.exports = (app, passport) => {
                 } else {
                   res.sendStatus(500);
                 }
-
               });
           } else {
             res.status(200).send({ status: false });
@@ -417,9 +419,40 @@ module.exports = (app, passport) => {
   });
 
   app.get("/auditionstatus", (req, res) => {
-    res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
+    if(req.user.role === "su"){
+      res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
+    } else { 
+      res.sendStatus(401)
+    }
   });
 
+  app.get("/datadump", authPass, async (req, res) => {
+    if(req.user.role==="su"){
+      await users.findAll().then((doc) => {
+        fs.closeSync(
+          fs.openSync(path.resolve(__dirname + `../../data.csv`), "w")
+        );
+        let csvWriter = createCsvWriter({
+          path: path.resolve(__dirname + `../../data.csv`),
+          header: [
+            { id: "username", title: "Name" },
+            { id: "email", title: "Email" },
+            { id: "phone", title: "Phone" },
+          ],
+        });
+        csvWriter
+          .writeRecords(doc)
+          .then(() => console.log("The CSV file was written successfully"))
+      });
+      res.header('Content-Type', 'text/csv');
+      res.attachment('data.csv');
+      return res.send(fs.createReadStream(
+        path.resolve(__dirname + `../../data.csv`)
+      ).pipe(res));
+    } else {
+      res.sendStatus(401)
+    }
+  });
   // Beta Testing Route
   app.put("/upgrade/:id", authPass, async (req, res) => {
     let id = req.params.id;
@@ -447,7 +480,11 @@ module.exports = (app, passport) => {
           },
         })
         .then((doc) => {
-          doc.status = "rejected";
+          if (doc.status === "rejected") {
+            doc.status = "unevaluated";
+          } else {
+            doc.status = "rejected";
+          }
           doc.save();
           res.sendStatus(201);
         });
