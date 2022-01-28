@@ -1,15 +1,16 @@
 #!/bin/bash
-USER="rudraditya"
-PASS="Postgresql311"
-HOST="127.0.0.1"
-DATABASE="audition_db"
+#! USER="rudraditya"
+#! PASS="Postgresql311"
+#!HOST="127.0.0.1"
+#!DATABASE="audition_db"
 echo "Hi, user enter your username, email, and password to signup as superuser"
 echo
 read -p 'Username: ' uservar
 read -p 'Email : ' emailvar
 read -sp 'Password: ' passvar
 sudo apt-get install postgresql-contrib libpq-dev
-psql postgresql://$USER:$PASS@$HOST/$DATABASE << EOF
+#! psql postgresql://$USER:$PASS@$HOST/$DATABASE << EOF
+psql postgres://htvmgque:WD6_qFUSsLn_VpiBj5tGW_zu9W4DeaAT@otto.db.elephantsql.com/htvmgque <<EOF
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION pgcrypto;
 INSERT INTO users(uuid,username,email,password,role,"createdAt","updatedAt") 

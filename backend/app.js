@@ -3,6 +3,7 @@ const passport = require('passport');
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 let app = express();
+let cors = require('cors')
 const { router } = require('./routes/eventLogger')
 const models = require('./models/index')
 const { sequelize } = require('./models');
@@ -28,6 +29,7 @@ let PORT = process.env.PORT;
 
 //Middlewares
 app.use(express.json());
+app.use(cors())
 app.use(cookieParser());
 app.use(session({ secret: 'my secret', cookie: { maxAge: 1200000 }, resave: true, saveUninitialized: true }));
 app.use(passport.initialize())
