@@ -134,7 +134,7 @@ module.exports = (app, passport) => {
     async (req, res) => {
       const payload = {
         id: req.user.uuid,
-        UserName: req.user.username,
+        username: req.user.username,
         email: req.user.email,
         //  password: req.user.password,
         role: req.user.role,
