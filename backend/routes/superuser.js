@@ -349,6 +349,28 @@ module.exports = (app, passport) => {
     }
   });
 
+  app.post("/profile",authPass,async(req,res) => {
+    if(req.user.role==="s"){
+      await users.findOne({
+        where:{
+          uuid:req.user.uuid
+        }
+      }).then((doc) => {
+        if(doc){
+          doc.roll = req.body.roll,
+          doc.phone = req.body.phone,
+          doc.profilebool = true
+          doc.save()
+          res.sendStatus(202)
+        } else {
+          res.sendStatus(404)
+        }
+      })
+    } else {
+      res.sendStatus(401)
+    } 
+  })
+
   app.get("/profile", authPass, async (req, res) => {
     if (req.user.role === "s") {
       await users.findOne({ where: { uuid: req.user.uuid } }).then((doc) => {
