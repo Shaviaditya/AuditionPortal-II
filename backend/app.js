@@ -9,9 +9,9 @@ const { sequelize } = require('./models');
 const { DataTypes } = require('sequelize');
 require('dotenv').config();
 let PORT = process.env.PORT;
-const pgtools = require('pgtools')
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/config/config.json')[env];
+// const pgtools = require('pgtools')
+// const env = process.env.NODE_ENV || 'development';
+// const config = require(__dirname + '/config/config.json')[env];
 /*pgtools.createdb({
    user: config.username,
    password: config.password,
