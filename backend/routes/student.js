@@ -123,9 +123,6 @@ module.exports = (app, passport) => {
                     doc.save();
                     console.log(doc)
                     roundmodel.findAll({
-                        where:{
-                            roundNo:save.round
-                        },
                         include:[{
                             model:question_set_model,
                             where:{
@@ -138,9 +135,6 @@ module.exports = (app, passport) => {
                     })
                 } else {
                     roundmodel.findAll({
-                        where:{
-                            roundNo:save.round
-                        },
                         include:[{
                             model:question_set_model,
                             where:{
