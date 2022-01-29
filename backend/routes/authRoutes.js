@@ -9,12 +9,12 @@ module.exports = (app, passport) => {
   require("../passport/passportgoogle")(passport);
   require("../passport/passportgithub")(passport);
   app.post("/auth/signup", async (req, res) => {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, phone } = req.body;
     if (role === "su") {
       return res.sendStatus(403).json({ success: false });
     } else {
       await users
-        .create({ username, email, password, role })
+        .create({ username, email, password, role, phone })
         .then(async (details) => {
           await users.createUser(details).then(async (user) => {
             if (!user) {

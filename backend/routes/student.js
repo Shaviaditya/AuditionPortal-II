@@ -134,7 +134,7 @@ module.exports = (app, passport) => {
                         }] 
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
-                        res.status(200).json({ round: round, time: doc.time });
+                        res.status(200).json({ data: round, time: doc.time });
                     })
                 } else {
                     roundmodel.findAll({
@@ -145,11 +145,12 @@ module.exports = (app, passport) => {
                             model:question_set_model,
                             where:{
                                 roundmodelRoundNo:save.round
-                            }
+                            },
+                            
                         }] 
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
-                        res.status(200).json({ round: round, time: doc.time });
+                        res.status(200).json({ data: round, time: doc.time });
                     })
                 }
             }
