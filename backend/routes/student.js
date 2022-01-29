@@ -125,7 +125,10 @@ module.exports = (app, passport) => {
                     roundmodel.findOne({
                         where: {
                             roundNo: save.round
-                        }
+                        },include:[{
+                            model:question_set_model,
+                            as: 'questions'
+                        }]  
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
                         res.status(200).json({ round: round, time: doc.time });
@@ -134,7 +137,10 @@ module.exports = (app, passport) => {
                     roundmodel.findOne({
                         where: {
                             roundNo: save.round
-                        }
+                        },include:[{
+                            model:question_set_model,
+                            as: 'questions'
+                        }]
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
                         res.status(200).json({ round: round, time: doc.time });
