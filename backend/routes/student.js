@@ -122,19 +122,31 @@ module.exports = (app, passport) => {
                     doc.time = new Date().getTime() + save.time * 60000 + 2000;
                     doc.save();
                     console.log(doc)
-                    roundmodel.findOne({
-                        where: {
-                            roundNo: save.round
-                        },include:question_set_model 
+                    roundmodel.findAll({
+                        where:{
+                            roundNo:save.round
+                        },
+                        include:[{
+                            model:question_set_model,
+                            where:{
+                                roundmodelRoundNo:save.round
+                            }
+                        }] 
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
                         res.status(200).json({ round: round, time: doc.time });
                     })
                 } else {
-                    roundmodel.findOne({
-                        where: {
-                            roundNo: save.round
-                        },include: question_set_model
+                    roundmodel.findAll({
+                        where:{
+                            roundNo:save.round
+                        },
+                        include:[{
+                            model:question_set_model,
+                            where:{
+                                roundmodelRoundNo:save.round
+                            }
+                        }] 
                     }).then((round) => {
                         if (!round) res.sendStatus(404);
                         res.status(200).json({ round: round, time: doc.time });
