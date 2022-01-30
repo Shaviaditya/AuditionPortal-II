@@ -350,37 +350,39 @@ module.exports = (app, passport) => {
   });
 
   app.post("/profile",authPass,async(req,res) => {
-    if(req.user.role==="s"){
-      await users.findOne({
-        where:{
-          uuid:req.user.uuid
-        }
-      }).then((doc) => {
-        if(doc){
-          doc.roll = req.body.roll,
-          doc.phone = req.body.phone,
-          doc.profilebool = true
-          doc.save()
-          res.sendStatus(202)
-        } else {
-          res.sendStatus(404)
-        }
-      })
-    } else {
-      res.sendStatus(401)
-    } 
+    // if(req.user.role==="s"){
+      
+    // } else {
+    //   res.sendStatus(401)
+    // }
+    await users.findOne({
+      where:{
+        uuid:req.user.uuid
+      }
+    }).then((doc) => {
+      if(doc){
+        doc.roll = req.body.roll,
+        doc.phone = req.body.phone,
+        doc.profilebool = true
+        doc.save()
+        res.sendStatus(202)
+      } else {
+        res.sendStatus(404)
+      }
+    }) 
   })
 
   app.get("/profile", authPass, async (req, res) => {
-    if (req.user.role === "s") {
-      await users.findOne({ where: { uuid: req.user.uuid } }).then((doc) => {
-        res.status(200).json({
-          phone: doc.phone,
-          roll: doc.roll,
-          profilebool: doc.profilebool,
-        });
+    // if (req.user.role === "s") {
+      
+    // }
+    await users.findOne({ where: { uuid: req.user.uuid } }).then((doc) => {
+      res.status(200).json({
+        phone: doc.phone,
+        roll: doc.roll,
+        profilebool: doc.profilebool,
       });
-    }
+    });
   });
 
   app.get("/getResult", authPass, async (req, res) => {
@@ -441,11 +443,7 @@ module.exports = (app, passport) => {
   });
 
   app.get("/auditionstatus", (req, res) => {
-    if(req.user.role === "su"){
-      res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
-    } else { 
-      res.sendStatus(401)
-    }
+    res.sendFile(path.join(__dirname + "../../config/auditionConfig.json"));
   });
 
   app.get("/datadump", authPass, async (req, res) => {

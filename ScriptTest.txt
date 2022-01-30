@@ -44,9 +44,11 @@ Testing script
 //Sample Question addition to a specific round.
 {
    "roundNo":1,
-   "quesText":"What is React?",
+   "quesText":"What is EEPROM?",
    "options":"1,2,3,4",
-   "quesType":"Subjective",
+   "quesType":"Mcq",
+   "ImageLink":"",
+   "AudioLink":"",
    "score":10
 }
 

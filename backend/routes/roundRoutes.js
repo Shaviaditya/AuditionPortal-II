@@ -101,6 +101,12 @@ module.exports = (app, passport) => {
   // Checked!
   app.post("/addQuestion", authWall, async (req, res) => {
     // Just add Round Number to check add new question.
+    console.log("LOLOLOL");
+    console.log(req.user);
+    console.log(req.user);
+    console.log(req.user);
+    console.log(req.user);
+    console.log(req.user);
     if (req.user.role == "su" || req.user.role == "m") {
       const {
         roundNo,

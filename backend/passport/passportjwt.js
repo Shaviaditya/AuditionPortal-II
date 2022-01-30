@@ -13,8 +13,7 @@ var cookieExtractor = function(req) {
   };
 module.exports = function (passport) {
     let opts = {};
-    opts.jwtFromRequest = cookieExtractor;
-    //opts.secretOrKey = 'GLUGAUDITION2021';
+    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
     opts.secretOrKey = process.env.SECRET;
     passport.use(new JwtStrategy(opts, (jwt_payload, callback) => {
         users.getUserById(jwt_payload).then((data,err) => {

@@ -180,7 +180,7 @@ module.exports = (app, passport) => {
     })
 
 
-    app.get("/student/get", authPass, async (req, res) => {
+    app.get("/student/get", passport.authenticate("jwt", { session: false }), async (req, res) => {
         await users.findOne({
             where: {
                 uuid: req.user.uuid

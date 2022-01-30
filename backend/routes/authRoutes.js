@@ -107,7 +107,7 @@ module.exports = (app, passport) => {
     passport.authenticate("google"),
     async (req, res) => {
       const payload = {
-        id: req.user.uuid,
+        uuid: req.user.uuid,
         username: req.user.username,
         email: req.user.email,
         //  password: req.user.password,
@@ -133,7 +133,7 @@ module.exports = (app, passport) => {
     passport.authenticate("github"),
     async (req, res) => {
       const payload = {
-        id: req.user.uuid,
+        uuid: req.user.uuid,
         username: req.user.username,
         email: req.user.email,
         //  password: req.user.password,
