@@ -28,17 +28,14 @@ module.exports = (app, passport) => {
               element;
             let optionsValues = "";
             if (Array.isArray(options) == true) {
-              options.forEach((e) => {
-                optionsValues = optionsValues.concat(String(e) + ",");
-                // optionsValues = optionsValues + toString(e) + ",";
-              });
-              optionsValues = optionsValues.substring(
-                0,
-                optionsValues.length - 1
-              );
+              optionsValues = optionsValues.concat(String(options[0].choice1) + ",");
+              optionsValues = optionsValues.concat(String(options[0].choice2) + ",");
+              optionsValues = optionsValues.concat(String(options[0].choice3) + ",");
+              optionsValues = optionsValues.concat(String(options[0].choice4));
             } else {
               optionsValues = options;
             }
+            console.log(optionsValues)
             question_set_model.create({
               quesText: quesText,
               ImageLink: ImageLink,
@@ -101,12 +98,6 @@ module.exports = (app, passport) => {
   // Checked!
   app.post("/addQuestion", authWall, async (req, res) => {
     // Just add Round Number to check add new question.
-    console.log("LOLOLOL");
-    console.log(req.user);
-    console.log(req.user);
-    console.log(req.user);
-    console.log(req.user);
-    console.log(req.user);
     if (req.user.role == "su" || req.user.role == "m") {
       const {
         roundNo,
