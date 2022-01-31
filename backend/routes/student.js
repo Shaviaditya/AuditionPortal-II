@@ -141,9 +141,9 @@ module.exports = (app, passport) => {
                         res.status(200).json({ data: round, time: doc.time });
                     })
                 } else {
-                    doc.time = new Date().getTime() + save.time * 60000 + 2000;
+                    /* doc.time = new Date().getTime() + save.time * 60000 + 2000;
                     doc.save();
-                    console.log(doc)
+                    console.log(doc) */
                     roundmodel.findAll({
                         include:[{
                             model:question_set_model,
