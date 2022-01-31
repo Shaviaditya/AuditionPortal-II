@@ -13,7 +13,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: "app",
-        allowedFormats: ["jpg", "png", "jpeg", "ogg", "mp3", "wav", "txt", "zip", "cpp"],
+        allowedFormats: ["jpg", "png", "jpeg", "ogg", "mp3", "wav", "txt", "zip", "cpp", "js", "css", "html","bmp"],
         resource_type: "auto"
     }
 });
