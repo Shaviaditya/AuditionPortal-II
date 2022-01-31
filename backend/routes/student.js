@@ -11,7 +11,6 @@ const {
         question_set_model
     }
 } = sequelize;
-var ansArr = [];
 // const workers = worker_connect.get();
 module.exports = (app, passport) => {
     require("../passport/passportjwt")(passport);
@@ -28,12 +27,20 @@ module.exports = (app, passport) => {
         // console.log(req.user)
         if (req.user.role === "s") {
             var { qid, qtype, answer, roundNo, ansLink } = req.body;
+            console.log(req.body);
             let currenttime = new Date().getTime();
             let save = JSON.parse(
                 fs.readFileSync(
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
+            var answer_decode = "";
+            if(Array.isArray(answer)==true){
+                answer.forEach(element => {
+                    answer_decode.concat(element+",");
+                });
+                answer = answer_decode.substring(0,answer_decode.length-1);
+            } 
             // Finds his dashboard 
             await users.findOne({
                 where: {
@@ -134,6 +141,9 @@ module.exports = (app, passport) => {
                         res.status(200).json({ data: round, time: doc.time });
                     })
                 } else {
+                    doc.time = new Date().getTime() + save.time * 60000 + 2000;
+                    doc.save();
+                    console.log(doc)
                     roundmodel.findAll({
                         include:[{
                             model:question_set_model,
@@ -152,6 +162,7 @@ module.exports = (app, passport) => {
     })
 
     app.get("/student/getAnswers", authPass, (req, res) => {
+        let ansArr = [];
         let save = JSON.parse(
             fs.readFileSync(
                 path.resolve(__dirname + "../../config/auditionConfig.json")
@@ -174,7 +185,10 @@ module.exports = (app, passport) => {
                     }
                 })
             }))
-            if (ansArr.length != 0) { res.json({ answers: ansArr }) }
+            if (ansArr.length != 0) { 
+                console.log(ansArr.length)
+                res.json({ answers: ansArr }) 
+            }
             else { res.sendStatus(404) }
         })
     })
