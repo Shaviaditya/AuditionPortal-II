@@ -48,6 +48,8 @@ module.exports = (app, passport) => {
               username: data.username,
               email: data.email,
               role: data.role,
+              phone: data.phone,
+              roll: data.roll,
               clearance: data.clearance,
             };
             console.log(JSON.stringify(payload));
@@ -107,12 +109,13 @@ module.exports = (app, passport) => {
     passport.authenticate("google"),
     async (req, res) => {
       const payload = {
-        uuid: req.user.uuid,
-        username: req.user.username,
-        email: req.user.email,
-        //  password: req.user.password,
-        role: req.user.role,
-        clearance: req.user.clearance,
+        uuid: data.uuid,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        phone: data.phone,
+        roll: data.roll,
+        clearance: data.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       res.cookie("jwt", token);
@@ -133,12 +136,13 @@ module.exports = (app, passport) => {
     passport.authenticate("github"),
     async (req, res) => {
       const payload = {
-        uuid: req.user.uuid,
-        username: req.user.username,
-        email: req.user.email,
-        //  password: req.user.password,
-        role: req.user.role,
-        clearance: req.user.clearance,
+        uuid: data.uuid,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        phone: data.phone,
+        roll: data.roll,
+        clearance: data.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       res.cookie("jwt", token);

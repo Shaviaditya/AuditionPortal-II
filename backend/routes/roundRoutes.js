@@ -20,6 +20,7 @@ module.exports = (app, passport) => {
         else presetRounds = doc.length;
       });
       const { questions, time } = req.body;
+      console.log(questions);
       await roundmodel
         .create({ roundNo: presetRounds + 1, time: time })
         .then(async (roundins) => {
@@ -28,10 +29,12 @@ module.exports = (app, passport) => {
               element;
             let optionsValues = "";
             if (Array.isArray(options) == true) {
-              optionsValues = optionsValues.concat(String(options[0].choice1) + ",");
-              optionsValues = optionsValues.concat(String(options[0].choice2) + ",");
-              optionsValues = optionsValues.concat(String(options[0].choice3) + ",");
-              optionsValues = optionsValues.concat(String(options[0].choice4));
+              if(options.length!=0){
+                optionsValues = optionsValues.concat(String(options[0].choice1) + ",");
+                optionsValues = optionsValues.concat(String(options[0].choice2) + ",");
+                optionsValues = optionsValues.concat(String(options[0].choice3) + ",");
+                optionsValues = optionsValues.concat(String(options[0].choice4));
+              }
             } else {
               optionsValues = options;
             }
