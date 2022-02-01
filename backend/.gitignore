@@ -1,5 +1,5 @@
 node_modules
 .env
 .env.save
-/config.json
+config.json
 *.sh
