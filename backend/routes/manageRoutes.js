@@ -95,7 +95,7 @@ module.exports = (app, passport) => {
                 entry.status = a.status
                 entry.save().then(async () => {
                     // const w1 = worker_connect.get();
-                    if (! await eventlogger(req.user, `Changed selection status for ${a.username} to ${a.status}`))
+                    if (await eventlogger(req.user, `Changed selection status for ${a.username} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });
@@ -131,7 +131,7 @@ module.exports = (app, passport) => {
                 // console.log(entry.feedback);
                 entry.save().then(async () => {
                     // const w2 = worker_connect.get();
-                    if (! await eventlogger(req.user, `Added feedback for ${entry.name}`))
+                    if (await eventlogger(req.user, `Added feedback for ${entry.name}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });

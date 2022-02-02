@@ -15,7 +15,7 @@ const eventHandler = async (req, res, next) => {
     res.writeHead(200, headers);
     await eventmodel.findAll().then(doc => {
         if (doc) {
-            res.write(`data: ${JSON.stringify(document)}\n\n`);
+            res.write(`data: ${JSON.stringify(doc)}\n\n`);
         }
     })
     const clientId = Date.now();
@@ -37,13 +37,12 @@ function sendEventsToAll(newLog) {
 
 const eventlogger = async (user, message) => {
     console.log(user)
-    await eventmodel.create({
+    const newLog = eventmodel.create({
         user: `${user.dataValues.username} (${user.dataValues.role})`,
         time: (new Date()).toString().substring(0, 24),
         message: message
-    }).then((newLog) => {
-        return sendEventsToAll(newLog);
     })
+    return sendEventsToAll(newLog);
 }
 router.get('/events', eventHandler);
 router.post('/upload', upload.single("file"), (req, res) => {

@@ -222,7 +222,7 @@ module.exports = (app, passport) => {
                 kid.status = "unevaluated"
                 kid.save().then(async () => {
                     // const worker1 = worker_connect.get();
-                    if (! await eventlogger(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
+                    if (await eventlogger(req.user, `Used the wildcard feature to push ${kid.username} to Round ${save.round}`))
                         res.sendStatus(200)
                     else res.sendStatus(500)
                 })

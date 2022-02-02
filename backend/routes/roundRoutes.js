@@ -54,7 +54,7 @@ module.exports = (app, passport) => {
             user: req.user,
             msg: `added Round ${presetRounds + 1}`,
           };
-          if (!await eventlogger(data.user,data.msg)) {
+          if (await eventlogger(data.user,data.msg)) {
             return res.status(201).json({ success: true });
           } else {
             return res.status(400).json({ success: false });

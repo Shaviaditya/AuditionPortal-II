@@ -26,11 +26,7 @@ module.exports = (app, passport) => {
       details.save();
       console.log(details);
       // const w1 = worker_connect.get();
-      if (
-        !(await eventlogger(
-          req.user,
-          `changed the role for ${details.username} to ${role}`
-        ))
+      if ((await eventlogger(req.user,`changed the role for ${details.username} to ${role}`))
       )
         res.sendStatus(201).json({ success: "true" });
       else res.sendStatus(500).json({ success: "false" });
@@ -48,7 +44,7 @@ module.exports = (app, passport) => {
       console.log(details);
       // const worker2 = worker_connect.get();
       if (
-        !(await eventlogger(
+        (await eventlogger(
           req.user,
           `Set Clearance for ${details.username} to ${clearance}`
         ))
@@ -77,7 +73,7 @@ module.exports = (app, passport) => {
           } else {
             save.time = doc.time;
             // const { eventlog } = worker_connect.get();
-            if (!(await eventlogger(req.user, `Pushed Round ${save.round}`))) {
+            if ((await eventlogger(req.user, `Pushed Round ${save.round}`))) {
               // eventlogger(req.user, `Pushed Round ${save.round}`)
               save = JSON.stringify(save);
               fs.writeFileSync(
@@ -106,7 +102,7 @@ module.exports = (app, passport) => {
         save.round = save.round;
         save.status = "def";
         // const { eventlog } = worker_connect.get();
-        if (!(await eventlogger(req.user, `Stopped Round ${save.round}`))) {
+        if ((await eventlogger(req.user, `Stopped Round ${save.round}`))) {
           save = JSON.stringify(save);
           fs.writeFileSync(
             path.resolve(__dirname + "../../config/auditionConfig.json"),
@@ -164,7 +160,7 @@ module.exports = (app, passport) => {
             .then(async () => {
               // const worker4 = worker_connect.get()
               if (
-                !(await eventlogger(
+                (await eventlogger(
                   req.user,
                   `Extended Time for everyone by 10 minutes`
                 ))
@@ -182,7 +178,7 @@ module.exports = (app, passport) => {
           }
           kidItem.save().then(async () => {
             if (
-              !(await eventlogger(
+              (await eventlogger(
                 req.user,
                 `Extended Time for ${kidItem.name} by 10 minutes to ${new Date(
                   kidItem.time
@@ -332,7 +328,7 @@ module.exports = (app, passport) => {
               .then(async () => {
                 // const { eventlog } = worker_connect.get();
                 if (
-                  !(await eventlogger(
+                  (await eventlogger(
                     req.user,
                     `Result pushed for round ${round}`
                   ))
