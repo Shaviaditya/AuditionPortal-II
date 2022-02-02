@@ -37,7 +37,7 @@ function sendEventsToAll(newLog) {
 
 const eventlogger = async (user, message) => {
     console.log(user)
-    const newLog = eventmodel.create({
+    const newLog = await eventmodel.create({
         user: `${user.dataValues.username} (${user.dataValues.role})`,
         time: (new Date()).toString().substring(0, 24),
         message: message
