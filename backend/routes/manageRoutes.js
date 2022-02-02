@@ -53,11 +53,15 @@ module.exports = (app, passport) => {
             try {
                 let userArr = [];
                 // Eager Loading not working so applied Lazy Loading based on Promises
-                await users.findAll({ where : { role: "s"}}).then(async (d1) => {
+                await users.findAll().then(async (d1) => {
                     await Promise.all(d1.map(async e => {
-                        await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
-                            return userArr.push([e,{"responses":data}]);
-                        }) 
+                        if(e.role==='s'){
+                            await question_answered_model.findAll({ where: { userUuid: e.uuid}}).then((data) => {
+                                return userArr.push([e,{"responses":data}]);
+                            })
+                        } else {
+                            return userArr.push([e]);
+                        } 
                     }))
                 })
                 return res.status(200).json({ data: userArr, user: req.user.username });

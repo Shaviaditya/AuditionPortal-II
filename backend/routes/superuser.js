@@ -133,7 +133,7 @@ module.exports = (app, passport) => {
         )
       );
       if (save.status === "ong") {
-        if (req.body.id === "all") {
+        if (req.body.uuid === "all") {
           await users
             .findAll({ where: { round: save.round } })
             .then((document) => {
@@ -143,17 +143,20 @@ module.exports = (app, passport) => {
                 var mutabledoc = document;
                 mutabledoc.forEach(async (kid) => {
                   if (kid.role === "s") {
-                    if (kid.time < new Date().getTime())
+                    if (kid.time < new Date().getTime()){
                       kid.time = new Date().getTime() + 600000 + 2000;
-                    else kid.time += 600000;
+                    } else { 
+                      kid.time = Number(kid.time) + 600000;
+                    }
                     console.log(kid);
-                    const kidDash = await users.findOne({
+                    kid.save();
+                    /* const kidDash = await users.findOne({
                       where: { uuid: kid.uuid },
                     });
                     if (kidDash.time < new Date().getTime())
                       kidDash.time = new Date().getTime() + 600000 + 2000;
                     else kidDash.time += 600000;
-                    kidDash.save();
+                    kidDash.save(); */
                   }
                 });
               }
@@ -170,18 +173,20 @@ module.exports = (app, passport) => {
               else res.sendStatus(500);
             });
         } else {
-          const kidItem = await users.findOne({ where: { uuid: req.body.id } });
-          if (kidItem.time < new Date().getTime())
+          const kidItem = await users.findOne({ where: { uuid: req.body.uuid } });
+          if (kidItem.time < new Date().getTime()){
             kidItem.time = new Date().getTime() + 600000 + 2000;
-          else kidItem.time += 600000;
+          }
+          else { 
+            kidItem.time = Number(kidItem.time) + 600000;
+          }
           kidItem.save().then(async () => {
-            // const worker5 = worker_connect.get();
             if (
               !(await eventlogger(
                 req.user,
                 `Extended Time for ${kidItem.name} by 10 minutes to ${new Date(
                   kidItem.time
-                ).toString.substring(0, 24)}`
+                ).toString().substring(0, 24)}`
               ))
             )
               res.sendStatus(202);
@@ -216,13 +221,12 @@ module.exports = (app, passport) => {
         .findAll({
           where: {
             status: {
-              [Op.or]: ["unevaluated", "review", "rejected"],
+              [Op.or]: ["selected", "rejected"],
             },
             [Op.and]: [{ role: "s" }, { round: Number(round) }],
           },
         })
         .then(async (userdoc) => {
-          datadump = userdoc;
           if (userdoc.length) {
             fs.closeSync(
               fs.openSync(
@@ -240,12 +244,12 @@ module.exports = (app, passport) => {
                   ) {
                     rejected += user.email + ",";
                   } else if (
-                    user.status === "unevaluated" &&
+                    user.status === "selected" &&
                     user.round === Number(round)
                   ) {
                     csvobject.push(user);
                     user.status = "unevaluated";
-                    user.round = 1;
+                    user.round += 1;
                     user.time = 0;
                     user.save();
                   }
