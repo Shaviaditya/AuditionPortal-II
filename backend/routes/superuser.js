@@ -146,13 +146,6 @@ module.exports = (app, passport) => {
                     }
                     console.log(kid);
                     kid.save();
-                    /* const kidDash = await users.findOne({
-                      where: { uuid: kid.uuid },
-                    });
-                    if (kidDash.time < new Date().getTime())
-                      kidDash.time = new Date().getTime() + 600000 + 2000;
-                    else kidDash.time += 600000;
-                    kidDash.save(); */
                   }
                 });
               }
@@ -350,11 +343,6 @@ module.exports = (app, passport) => {
   });
 
   app.post("/profile",authPass,async(req,res) => {
-    // if(req.user.role==="s"){
-      
-    // } else {
-    //   res.sendStatus(401)
-    // }
     await users.findOne({
       where:{
         uuid:req.user.uuid

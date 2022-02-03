@@ -23,45 +23,44 @@ module.exports = (app, passport) => {
     );
     // Overall Save
     app.put("/student/answerround",authPass, async(req,res) => {
-        try{
+        if(req.user.time > new Date().getTime()){
             const answers = req.body.answers;
-            const userId = req.user.uuid;
-            answers.forEach(async ans => {
-                await question_answered_model.findOne({
-                    where:{
-                        [Op.and]:[
-                            { userUuid: userId },
-                            { qid : ans.qid }
-                        ]
-                    }
-                }).then(async (doc) => {
-                    if(doc) {
-                        doc.answer = ans.answer,
-                        doc.ansLink = ans.ansLink
-                        doc.save();   
-                    } else {
-                        const new_ans = await question_answered_model.create({
-                            userUuid: userId,
-                            roundInfo: ans.roundNo,
-                            qid: ans.qid,
-                            qtype: ans.qtype,
-                            answer: ans.answer,
-                            ansLink: ans.ansLink,
-                        })
-                    }
+                const userId = req.user.uuid;
+                answers.forEach(async ans => {
+                    await question_answered_model.findOne({
+                        where:{
+                            [Op.and]:[
+                                { userUuid: userId },
+                                { qid : ans.qid }
+                            ]
+                        }
+                    }).then(async (doc) => {
+                        if(doc) {
+                            doc.answer = ans.answer,
+                            doc.ansLink = ans.ansLink
+                            doc.save();   
+                        } else {
+                            const new_ans = await question_answered_model.create({
+                                userUuid: userId,
+                                roundInfo: ans.roundNo,
+                                qid: ans.qid,
+                                qtype: ans.qtype,
+                                answer: ans.answer,
+                                ansLink: ans.ansLink,
+                            })
+                        }
                 })
             })
             res.sendStatus(200).json({"Changes":"Applied!"})
-        } catch (e) {
-            res.sendStatus(404).json({"Error":e})
+        } else {
+            res.sendStatus(401);
         }
     })
     // each answer is processed at one time.
     app.put("/student/answer", authPass, async (req, res) => {
-        // The Route is fot each answer a student shall give....
+        // The Route is for each answer a student shall give....
         // console.log(req.user)
-        if (req.user.role === "s") {
-            var { qid, qtype, answer, roundNo, ansLink } = req.body;
+        var { qid, qtype, answer, roundNo, ansLink } = req.body;
             console.log(req.body);
             let currenttime = new Date().getTime();
             let save = JSON.parse(
@@ -142,9 +141,6 @@ module.exports = (app, passport) => {
                     res.sendStatus(401);
                 }
             })
-        } else {
-            res.sendStatus(401);
-        }
     })
 
     app.get('/student/getRound', authPass, async (req, res) => {
