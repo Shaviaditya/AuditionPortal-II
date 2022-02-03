@@ -35,6 +35,9 @@ module.exports = (app, passport) => {
                             ]
                         }
                     }).then(async (doc) => {
+                        if(Array.isArray(ans.answer)==true){
+                            ans.answer = ans.answer.join(",")
+                        }
                         if(doc) {
                             doc.answer = ans.answer,
                             doc.ansLink = ans.ansLink
@@ -68,12 +71,8 @@ module.exports = (app, passport) => {
                     path.resolve(__dirname + "../../config/auditionConfig.json")
                 )
             );
-            var answer_decode = "";
             if(Array.isArray(answer)==true){
-                answer.forEach(element => {
-                    answer_decode.concat(element+",");
-                });
-                answer = answer_decode.substring(0,answer_decode.length-1);
+                answer = answer.join(",")
             } 
             // Finds his dashboard 
             await users.findOne({

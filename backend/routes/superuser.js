@@ -460,8 +460,21 @@ module.exports = (app, passport) => {
     } else {
       res.sendStatus(401)
     }
-  });
+  })
   // Beta Testing Route
+  app.put("/timereset", authPass, async(req,res) => {
+    if(req.user.role === "su"){
+      await users.findAll().then((doc) => {
+        doc.forEach((user)=>{
+          user.time = 0;
+          user.save();
+        })
+      })
+      res.sendStatus(200)
+    } else {
+      res.sendStatus(401)
+    }
+  })
   app.put("/upgrade/:id", authPass, async (req, res) => {
     let id = req.params.id;
     if (req.user.role === "su") {
