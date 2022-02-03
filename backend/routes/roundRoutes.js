@@ -136,9 +136,9 @@ module.exports = (app, passport) => {
     }
   });
   // Edit Question
-  app.put("/editQuestion/:id", authWall, async (req, res) => {
+  app.put("/editQuestion", authWall, async (req, res) => {
     if (req.user.role === "su" || res.user.role === "m") {
-      const Qid = req.params.id;
+      const Qid = req.body.quesId;
       await question_set_model
         .findOne({ where: { quesId: Qid } })
         .then(async (doc) => {
@@ -214,20 +214,19 @@ module.exports = (app, passport) => {
   });
 
   // Checked!
-  app.delete("/removeQuestion/:id", authWall, async (req, res) => {
-    if (req.user.role == "su" || req.user.role == "m") {
-      try {
-        const uuid = req.params.id;
+  app.delete("/removeQuestion", authWall, async (req, res) => {
+    console.log(req.user);
+    if (req.user.role === "su" || req.user.role === "m") {
+      const qid = req.body.quesId;
         const question = await question_set_model.findOne({
           where: {
-            quesId: uuid,
+            quesId: qid,
           },
         });
-        await question.destroy();
-        return res.status(200).json({ delete: true });
-      } catch (err) {
-        return res.status(500).json(err);
-      }
+        question.destroy();
+        res.sendStatus(200).json({ delete: true });
+    } else {
+      res.sendStatus(401)
     }
   });
 

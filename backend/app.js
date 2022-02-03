@@ -45,7 +45,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 app.get('/', (req, res) => {
-    res.status(200).json({ Welcome: user });
+    res.status(200).json({ "Welcome": "Alien" });
 })
 // app.get('/getdata',passport.authenticate("jwt", { session: false }),(req,res)=>{
 //     res.send({"data":req.user})

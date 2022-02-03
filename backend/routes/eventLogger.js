@@ -17,7 +17,7 @@ const eventHandler = async (req, res, next) => {
         if (doc) {
             res.write(`data: ${JSON.stringify(doc)}\n\n`);
         }
-    })
+    }) 
     const clientId = Date.now();
     const newClient = {
         id: clientId,
@@ -36,7 +36,6 @@ function sendEventsToAll(newLog) {
 }
 
 const eventlogger = async (user, message) => {
-    console.log(user)
     const newLog = await eventmodel.create({
         user: `${user.dataValues.username} (${user.dataValues.role})`,
         time: (new Date()).toString().substring(0, 24),
