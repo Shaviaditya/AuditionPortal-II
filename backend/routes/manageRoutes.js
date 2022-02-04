@@ -2,6 +2,7 @@
 // const worker_connect = require('./controller')
 const { sequelize } = require('../models');
 const { eventlogger } = require('./eventLogger');
+const fs = require('fs')
 // const question_answered_model = require('../models/question_answered_model');
 require('dotenv').config();
 const {
@@ -110,22 +111,18 @@ module.exports = (app, passport) => {
         "/protected/feedback",
         authPass,
         async (req, res) => {
-            // var a = req.body;
-            if (
-                req.user.role === "su" ||
-                (req.user.role === "m")
-            ) {
+            if (req.user.role === "su" || (req.user.role === "m")) {
                 const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 if (entry.feedback.length == 0) {
                     let arr = []
-                    arr.push(req.body.feedback);
+                    arr.push(`${req.body.username} : [ Round : ${req.body.round} ] :: ${req.body.feedback},`);
                     entry.feedback = arr;
                 } else {
                     let arr = [];
                     entry.feedback.forEach(el => {
                         arr.push(el);
                     })
-                    arr.push(req.body.feedback);
+                    arr.push(`${req.body.username} : [ Round : ${req.body.round} ] :: ${req.body.feedback},`);
                     entry.feedback = arr;
                 }
                 // console.log(entry.feedback);

@@ -108,14 +108,15 @@ module.exports = (app, passport) => {
     "/auth/google/callback",
     passport.authenticate("google"),
     async (req, res) => {
+
       const payload = {
-        uuid: data.uuid,
-        username: data.username,
-        email: data.email,
-        role: data.role,
-        phone: data.phone,
-        roll: data.roll,
-        clearance: data.clearance,
+        uuid: req.user.uuid,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        phone: req.user.phone,
+        roll: req.user.roll,
+        clearance: req.user.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       res.cookie("jwt", token);
@@ -136,13 +137,13 @@ module.exports = (app, passport) => {
     passport.authenticate("github"),
     async (req, res) => {
       const payload = {
-        uuid: data.uuid,
-        username: data.username,
-        email: data.email,
-        role: data.role,
-        phone: data.phone,
-        roll: data.roll,
-        clearance: data.clearance,
+        uuid: req.user.uuid,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        phone: req.user.phone,
+        roll: req.user.roll,
+        clearance: req.user.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       res.cookie("jwt", token);

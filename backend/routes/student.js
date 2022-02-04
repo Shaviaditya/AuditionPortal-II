@@ -2,6 +2,7 @@ const { sequelize, models } = require('../models/index');
 const fs = require("fs");
 const path = require('path');
 const { all, Op } = require('sequelize');
+const { eventlogger } = require('./eventLogger')
 require('dotenv').config();
 const {
     models: {

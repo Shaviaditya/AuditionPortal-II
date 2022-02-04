@@ -461,6 +461,26 @@ module.exports = (app, passport) => {
       res.sendStatus(401)
     }
   })
+  app.get('/result',authPass,async(req,res) => {
+    let save = JSON.parse(
+      fs.readFileSync(
+        path.resolve(__dirname + "../../config/auditionConfig.json")
+      )
+    );
+    if(save.status==="res" && save.round>0){
+      const data = await users.findAll({
+        where:{
+          [Op.and]:[
+            {status:"unevaluated"},
+            {round: save.round+1}
+          ]
+        }
+      })
+      res.send(data)
+    } else {
+      res.sendStatus(404)
+    }
+  })
   // Beta Testing Route
   app.put("/timereset", authPass, async(req,res) => {
     if(req.user.role === "su"){
