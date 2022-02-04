@@ -115,15 +115,10 @@ module.exports = (app, passport) => {
                 const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 if (entry.feedback.length == 0) {
                     let arr = []
-                    arr.push(`${req.body.username} : [ Round : ${req.body.round} ] :: ${req.body.feedback},`);
+                    arr.push(req.body.feedback);
                     entry.feedback = arr;
                 } else {
-                    let arr = [];
-                    entry.feedback.forEach(el => {
-                        arr.push(el);
-                    })
-                    arr.push(`${req.body.username} : [ Round : ${req.body.round} ] :: ${req.body.feedback},`);
-                    entry.feedback = arr;
+                    entry.feedback.push(req.body.feedback);
                 }
                 // console.log(entry.feedback);
                 entry.save().then(async () => {

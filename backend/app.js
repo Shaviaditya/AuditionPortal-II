@@ -12,29 +12,13 @@ const { DataTypes } = require('sequelize');
 require('dotenv').config();
 const morgan = require('morgan')
 let PORT = process.env.PORT;
-// const pgtools = require('pgtools')
-// const env = process.env.NODE_ENV || 'development';
-// const config = require(__dirname + '/config/config.json')[env];
-/*pgtools.createdb({
-   user: config.username,
-   password: config.password,
-   port: 5432,
-   host: 'localhost'
- }, config.database, function (err, res) {
-   if (err) {
-     console.error(err);
-     process.exit(-1);
-   }
-   console.log(res);
-});
-*/ 
 
 //Middlewares
 app.use(express.json());
 app.use(cors())
 app.use(morgan('dev'))
 app.use(cookieParser());
-// app.use(session({ secret: 'my secret', cookie: { maxAge: 1200000 }, resave: true, saveUninitialized: true }));
+
 app.use(cookieSession({
     maxAge: 24 * 60 * 60 * 1000,
     keys: ["rohan"]

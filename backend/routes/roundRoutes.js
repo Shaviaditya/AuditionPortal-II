@@ -151,11 +151,10 @@ module.exports = (app, passport) => {
           doc.options = options;
           doc.score = score;
           await doc.save();
-          console.log(doc);
         });
-      res.sendStatus(200).json({ "Question Edited": "Done" });
+      return res.sendStatus(200)
     } else {
-      res.sendStatus(401).json({ Access: "Unauthorized" });
+      return res.sendStatus(401)
     }
   });
 

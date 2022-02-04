@@ -54,7 +54,7 @@ module.exports = (sequelize) => {
       defaultValue: 0
     },
     feedback: {
-      type: DataTypes.ARRAY(DataTypes.TEXT),
+      type: DataTypes.ARRAY(DataTypes.JSONB),
       allowNull: true
     },
     phone: {
