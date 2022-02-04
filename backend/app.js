@@ -21,7 +21,7 @@ app.use(cookieParser());
 
 app.use(cookieSession({
     maxAge: 24 * 60 * 60 * 1000,
-    keys: ["rohan"]
+    keys: ["rudra"]
 }))
 app.use(passport.initialize())
 app.use(passport.session());
@@ -31,9 +31,7 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.status(200).json({ "Welcome": "Alien" });
 })
-// app.get('/getdata',passport.authenticate("jwt", { session: false }),(req,res)=>{
-//     res.send({"data":req.user})
-// })
+
 app.use('/', router)
 //Routes
 require('./routes/authRoutes')(app, passport)
