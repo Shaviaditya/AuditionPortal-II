@@ -40,14 +40,12 @@ require('./routes/manageRoutes')(app, passport)
 require('./routes/superuser')(app, passport)
 require('./routes/student')(app, passport)
 
-models.sequelize.then(async () => {
-    try { 
-        sequelize.authentication;
-        console.log(`Database Connected`)
-        app.listen(PORT, async () => {
-            console.log(`Server up on http://localhost:${PORT}`)
-        })
-    } catch (err) {
-        console.log(err);
-    }
-})
+try { 
+    sequelize.authentication;
+    console.log(`Database Connected`)
+    app.listen(PORT, async () => {
+        console.log(`Server up on http://localhost:${PORT}`)
+    })
+} catch (err) {
+    console.log(err);
+}

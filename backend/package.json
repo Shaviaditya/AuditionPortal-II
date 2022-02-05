@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pm2 start app.js",
     "makemigration": "./node_modules/sequelize-auto-migrations-v2/bin/makemigration.js",
-    "runmigration": "./node_modules/sequelize-auto-migrations-v2/bin/runmigration.js" 
+    "runmigration": "./node_modules/sequelize-auto-migrations-v2/bin/runmigration.js"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +39,7 @@
     "pg-hstore": "^2.3.4",
     "pgtools": "^0.3.2",
     "sequelize": "^6.8.0",
-    "sequelize-auto-migrations-v2": "^1.2.1"
+    "sequelize-auto-migrations-v2": "^1.2.1",
+    "sequelize-cli": "^6.4.1"
   }
 }
