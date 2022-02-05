@@ -27,24 +27,12 @@ module.exports = (app, passport) => {
           questions.forEach((element) => {
             const { quesText, ImageLink, AudioLink, quesType, options, score } =
               element;
-            let optionsValues = "";
-            if (Array.isArray(options) == true) {
-              if(options.length!=0){
-                optionsValues = optionsValues.concat(String(options[0].choice1) + ",");
-                optionsValues = optionsValues.concat(String(options[0].choice2) + ",");
-                optionsValues = optionsValues.concat(String(options[0].choice3) + ",");
-                optionsValues = optionsValues.concat(String(options[0].choice4));
-              }
-            } else {
-              optionsValues = options;
-            }
-            console.log(optionsValues)
             question_set_model.create({
               quesText: quesText,
               ImageLink: ImageLink,
               AudioLink: AudioLink,
               quesType: quesType,
-              options: optionsValues,
+              options: options,
               score: score,
               roundmodelRoundNo: presetRounds + 1,
             });

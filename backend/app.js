@@ -40,7 +40,7 @@ require('./routes/manageRoutes')(app, passport)
 require('./routes/superuser')(app, passport)
 require('./routes/student')(app, passport)
 
-models.sequelize.sync().then(async () => {
+models.sequelize.then(async () => {
     try { 
         sequelize.authentication;
         console.log(`Database Connected`)

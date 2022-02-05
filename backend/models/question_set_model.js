@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     options: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: true
     },
     score: {

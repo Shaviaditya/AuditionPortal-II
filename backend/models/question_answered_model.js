@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     answer: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: true,
     },
     qtype: {

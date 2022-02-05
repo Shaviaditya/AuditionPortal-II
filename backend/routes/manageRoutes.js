@@ -113,12 +113,27 @@ module.exports = (app, passport) => {
         async (req, res) => {
             if (req.user.role === "su" || (req.user.role === "m")) {
                 const entry = await users.findOne({ where: { uuid: req.body.uuid } })
-                if (entry.feedback.length == 0) {
+                if (entry.feedback === null) {
                     let arr = []
-                    arr.push(req.body.feedback);
+                    let obj = {
+                        "username":req.body.username,
+                        "feedback":req.body.feedback,
+                        "round":req.body.round
+                    }
+                    arr.push(obj);
                     entry.feedback = arr;
                 } else {
-                    entry.feedback.push(req.body.feedback);
+                    let arr = []
+                    entry.feedback.forEach(el => {
+                        arr.push(el)
+                    })
+                    let obj = {
+                        "username":req.body.username,
+                        "feedback":req.body.feedback,
+                        "round":req.body.round
+                    }
+                    arr.push(obj)
+                    entry.feedback = arr
                 }
                 // console.log(entry.feedback);
                 entry.save().then(async () => {
