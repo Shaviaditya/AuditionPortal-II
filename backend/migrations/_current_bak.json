@@ -191,11 +191,6 @@
                     "field": "options",
                     "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
                 },
-                "score": {
-                    "allowNull": true,
-                    "field": "score",
-                    "seqType": "Sequelize.INTEGER"
-                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -323,5 +318,5 @@
             "indexes": []
         }
     },
-    "revision": 3
+    "revision": 2
 }

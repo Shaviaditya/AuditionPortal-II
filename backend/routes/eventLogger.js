@@ -1,3 +1,6 @@
+/*
+    Tested
+*/
 const { sequelize } = require("../models");
 const multer = require('multer');
 const express = require('express');

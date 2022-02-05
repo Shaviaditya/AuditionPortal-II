@@ -1,3 +1,7 @@
+/*
+  Fucking Tested!!
+*/
+
 const { sequelize } = require("../models");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -57,14 +61,14 @@ module.exports = (app, passport) => {
               expiresIn: 600000,
             });
             if (data.role === "m" || data.role === "su") {
-              res.cookie("jwt", token);
+              // res.cookie("jwt", token);
               res.json({
                 success: true,
                 token: "Bearer " + token,
                 admin: data.username,
               });
             } else {
-              res.cookie("jwt", token);
+              // res.cookie("jwt", token);
               res.status(201).json({
                 success: true,
                 token: "Bearer " + token,
@@ -119,7 +123,7 @@ module.exports = (app, passport) => {
         clearance: req.user.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
-      res.cookie("jwt", token);
+      // res.cookie("jwt", token);
       if (req.user.mode === "google")
         res.redirect(`${process.env.FRONTEND}?token=${token}`);
       else res.redirect(`${process.env.FRONTEND}register?error=email`);
@@ -146,7 +150,7 @@ module.exports = (app, passport) => {
         clearance: req.user.clearance,
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
-      res.cookie("jwt", token);
+      // res.cookie("jwt", token);
       if (req.user.mode === "github")
         res.redirect(`${process.env.FRONTEND}?token=${token}`);
       else res.redirect(`${process.env.FRONTEND}register?error=email`);

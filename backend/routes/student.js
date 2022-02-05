@@ -26,6 +26,7 @@ module.exports = (app, passport) => {
     app.put("/student/answerround",authPass, async(req,res) => {
         if(req.user.time > new Date().getTime()){
             const answers = req.body.answers;
+                console.log(answers)
                 const userId = req.user.uuid;
                 answers.forEach(async ans => {
                     await question_answered_model.findOne({
@@ -62,6 +63,7 @@ module.exports = (app, passport) => {
         // The Route is for each answer a student shall give....
         // console.log(req.user)
         var { qid, qtype, answer, roundNo, ansLink } = req.body;
+        
             console.log(req.body);
             let currenttime = new Date().getTime();
             let save = JSON.parse(
