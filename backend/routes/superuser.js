@@ -459,6 +459,7 @@ module.exports = (app, passport) => {
         doc.forEach((user)=>{
           user.round = 1;
           user.time = 0;
+          user.status = "unevaluated";
           user.save();
         })
       })

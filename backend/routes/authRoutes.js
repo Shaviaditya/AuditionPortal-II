@@ -124,12 +124,9 @@ module.exports = (app, passport) => {
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       // res.cookie("jwt", token);
-      /* if (req.user.mode === "google")
-        res.redirect(`${process.env.FRONTEND}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND}register?error=email`); */
       if (req.user.mode === "google")
-        res.redirect(`${process.env.FRONTEND2}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND2}register?error=email`);
+        res.redirect(`${process.env.FRONTEND}?token=${token}`);
+      else res.redirect(`${process.env.FRONTEND}register?error=email`);
       // res.status(201).json({
       //     success: true,
       //     token: "Bearer " + token,
@@ -154,12 +151,9 @@ module.exports = (app, passport) => {
       };
       var token = jwt.sign(payload, process.env.SECRET, { expiresIn: 600000 });
       // res.cookie("jwt", token);
-      /* if (req.user.mode === "github")
-        res.redirect(`${process.env.FRONTEND}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND}register?error=email`); */
       if (req.user.mode === "github")
-        res.redirect(`${process.env.FRONTEND2}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND2}register?error=email`);
+        res.redirect(`${process.env.FRONTEND}?token=${token}`);
+      else res.redirect(`${process.env.FRONTEND}register?error=email`);
     //   res.status(201).json({
     //     success: true,
     //     token: "Bearer " + token,
