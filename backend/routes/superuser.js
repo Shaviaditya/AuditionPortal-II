@@ -199,144 +199,115 @@ module.exports = (app, passport) => {
         status: "res",
       });
       var csvobject = [];
-      let datadump;
       var rejected = "";
-      var unevaluated = "";
-      await fs.promises.writeFile(
-        path.resolve(__dirname + "../../config/auditionConfig.json"),
-        save
-      );
-      await users
-        .findAll({
-          where: {
-            status: {
-              [Op.or]: ["selected", "rejected"],
-            },
-            [Op.and]: [{ role: "s" }, { round: Number(round) }],
-          },
-        })
-        .then(async (userdoc) => {
-          if (userdoc.length) {
-            fs.closeSync(
-              fs.openSync(
-                path.resolve(__dirname + `../../result/Result_${round}.csv`),
-                "w"
-              )
-            );
-            await users
-              .findAll({ where: { role: "s" } })
-              .then((doc) => {
-                doc.forEach(async (user) => {
-                  if (
-                    user.status === "rejected" &&
-                    user.round === Number(round)
-                  ) {
-                    rejected += user.email + ",";
-                  } else if (
-                    user.status === "selected" &&
-                    user.round === Number(round)
-                  ) {
-                    csvobject.push(user);
-                    user.status = "unevaluated";
-                    user.round += 1;
-                    user.time = 0;
-                    user.save();
-                  }
-                });
-              })
-              .then(async () => {
-                let csvWriter = createCsvWriter({
-                  path: path.resolve(
-                    __dirname + `../../result/Result_${round}.csv`
-                  ),
-                  header: [
-                    { id: "username", title: "Name" },
-                    { id: "email", title: "Email" },
-                    { id: "phone", title: "Phone" },
-                  ],
-                });
-                csvWriter
-                  .writeRecords(csvobject)
-                  .then(() =>
-                    console.log("The CSV file was written successfully")
-                  );
-                const rejectedones = rejected.slice(0, -1);
-                let worker;
-                if (isMainThread) {
-                  worker = new Worker(
-                    path.resolve(__dirname + "../../services/reportSender.js")
-                  );
-                  worker.on("message", (data) => {
-                    console.log("Done", data);
-                  });
-                  worker.on("error", (data) => {
-                    console.log("Error", data);
-                  });
-                  worker.on("exit", (data) => {
-                    console.log("Exit", data);
-                  });
-                }
-                var subject = "Thank you for your participation.";
-                var text =
-                  "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>";
-                var to = rejectedones;
-                const data = {
-                  subject: subject,
-                  text: text,
-                  list: to,
-                };
-                worker.postMessage(data);
-                // const worker_Thread = worker_connect.get()
-                // worker_Thread.mailing(subject,text,to);
-                const results = [];
-                fs.createReadStream(
-                  path.resolve(__dirname + `../../result/Result_${round}.csv`)
-                )
-                  .pipe(csv())
-                  .on("data", (data) => results.push(data))
-                  .on("end", () => {
-                    results.forEach((doc2) => {
-                      const maildata = {
-                        subject: "Congratulations!",
-                        text: `<html>Hi <b>${doc2.Name}.</b><br/><br/>
-                                                We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
-                                                You will be moving ahead in the audition process.<br/>
-                                                Further details will be let known very soon.<br/><br/>
-                                                Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
-                                                All latest updates will come there first!<br/><br/>
-                                                Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
-                                                Join here: ${process.env.DISCORD}<br/><br/>
-                                                Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
-                                                If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
-                                                May The Source Be With You!🐧❤️<br/><br/>
-                                                Thanking You,<br/>
-                                                Your's Sincerely,<br/>
-                                                <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
-                        list: doc2.Email,
-                      };
-                      worker.postMessage(maildata);
-                    });
-                  });
-              })
-              .then(async () => {
-                // const { eventlog } = worker_connect.get();
-                if (
-                  (await eventlogger(
-                    req.user,
-                    `Result pushed for round ${round}`
-                  ))
-                ) {
-                  // console.log(save)
-                  // const writeFilePromisified = util.promisify(fs.writeFile)
-                  res.status(201).send({ status: true });
-                } else {
-                  res.sendStatus(500);
-                }
-              });
-          } else {
-            res.status(200).send({ status: false });
+      await fs.promises.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"),save);
+      await users.findAll().then(async (userdoc) => {
+        fs.closeSync(
+          fs.openSync(
+            path.resolve(__dirname + `../../result/Result_${round}.csv`),
+            "w"
+          )
+        );
+        let check = true 
+        userdoc.forEach(async (user) => {
+          if (user.role === "su" || user.role === "m") {
+            user.status = "unevaluated";
+            user.round += 1;
+            user.time = 0;
+            user.save();
+          } else if (user.role === "s") {
+            if (user.status === "unevaluated") {
+              check = false;
+              return res.sendStatus(400);
+            } else {
+              if (user.status === "rejected" && user.round === Number(round)) {
+                rejected += user.email + ",";
+              } else if (user.status === "selected" && user.round === Number(round)) {
+                csvobject.push(user);
+                user.status = "unevaluated";
+                user.round += 1;
+                user.time = 0;
+                user.save();
+              }
+            }
           }
         });
+        if(check===true){
+          let csvWriter = createCsvWriter({
+            path: path.resolve(__dirname + `../../result/Result_${round}.csv`),
+            header: [
+              { id: "username", title: "Name" },
+              { id: "email", title: "Email" },
+              { id: "phone", title: "Phone" },
+            ],
+          });
+          csvWriter
+            .writeRecords(csvobject)
+            .then(() => console.log("The CSV file was written successfully"));
+          const rejectedones = rejected.slice(0, -1);
+          let worker;
+          if (isMainThread) {
+            worker = new Worker(
+              path.resolve(__dirname + "../../services/reportSender.js")
+            );
+            worker.on("message", (data) => {
+              console.log("Done", data);
+            });
+            worker.on("error", (data) => {
+              console.log("Error", data);
+            });
+            worker.on("exit", (data) => {
+              console.log("Exit", data);
+            });
+          }
+          var subject = "Thank you for your participation.";
+          var text =
+            "<html>Hi there.<br/>We announce with a heavy heart that you will not be moving ahead in the audition process.<br/><br/>However, the GNU/Linux User's Group will always be there to help your every need to the best of our abilities.<br/>May The Source Be With You!<br/><br/>Thanking You,<br/>Yours' Sincerely,<br/>GNU/Linux Users' Group, NIT Durgapur.</html>";
+          var to = rejectedones;
+          const data = {
+            subject: subject,
+            text: text,
+            list: to,
+          };
+          worker.postMessage(data);
+          const results = [];
+          fs.createReadStream(
+            path.resolve(__dirname + `../../result/Result_${round}.csv`)
+          )
+            .pipe(csv())
+            .on("data", (data) => results.push(data))
+            .on("end", () => {
+              results.forEach((doc2) => {
+                const maildata = {
+                  subject: "Congratulations!",
+                  text: `<html>Hi <b>${doc2.Name}.</b><br/><br/>
+                                                        We are glad to inform you that you were shortlisted in <b>Round ${round}.</b><br/>
+                                                        You will be moving ahead in the audition process.<br/>
+                                                        Further details will be let known very soon.<br/><br/>
+                                                        Join our Whatsapp All in Group here: ${process.env.WHATSAPP} if you haven't joined yet.<br/><br/>
+                                                        All latest updates will come there first!<br/><br/>
+                                                        Make sure you join the GLUG ALL-IN server for the next rounds of the audition process.<br/>
+                                                        Join here: ${process.env.DISCORD}<br/><br/>
+                                                        Make sure that you set your server nick-name as your real name alongwith your complete roll number.<br/>
+                                                        If your name is ABCD and Roll number is 20XX800XX, your username should be ABCD_20XX800XX.<br/><br/>
+                                                        May The Source Be With You!🐧❤️<br/><br/>
+                                                        Thanking You,<br/>
+                                                        Your's Sincerely,<br/>
+                                                        <b>GNU/Linux Users' Group, NIT Durgapur.</b></html>`,
+                  list: doc2.Email,
+                };
+                worker.postMessage(maildata);
+              });
+            });      
+          if (await eventlogger(req.user,`Result pushed for round ${round}`)) {
+            res.sendStatus(201);
+          } else {
+            res.sendStatus(500);
+          }
+        } else {
+           res.sendStatus(400)
+        }
+      });
     } else {
       res.sendStatus(401);
     }
