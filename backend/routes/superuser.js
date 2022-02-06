@@ -173,7 +173,7 @@ module.exports = (app, passport) => {
             if (
               (await eventlogger(
                 req.user,
-                `Extended Time for ${kidItem.name} by 10 minutes to ${new Date(
+                `Extended Time for ${kidItem.username} by 10 minutes to ${new Date(
                   kidItem.time
                 ).toString().substring(0, 24)}`
               ))

@@ -138,7 +138,7 @@ module.exports = (app, passport) => {
                 // console.log(entry.feedback);
                 entry.save().then(async () => {
                     // const w2 = worker_connect.get();
-                    if (await eventlogger(req.user, `Added feedback for ${entry.name}`))
+                    if (await eventlogger(req.user, `Added feedback for ${req.body.username}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
                         res.sendStatus(500).json({ success: "false" });

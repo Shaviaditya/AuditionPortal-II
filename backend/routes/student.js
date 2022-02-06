@@ -220,7 +220,7 @@ module.exports = (app, passport) => {
         })
     })
 
-
+    
     app.get("/student/get", passport.authenticate("jwt", { session: false }), async (req, res) => {
         await users.findOne({
             where: {
