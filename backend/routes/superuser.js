@@ -486,6 +486,7 @@ module.exports = (app, passport) => {
     if(req.user.role === "su"){
       await users.findAll().then((doc) => {
         doc.forEach((user)=>{
+          user.round = 1;
           user.time = 0;
           user.save();
         })

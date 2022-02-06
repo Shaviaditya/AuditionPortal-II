@@ -246,6 +246,7 @@ module.exports = (app, passport) => {
             }).then(async (kid) => {
                 if (!kid) res.sendStatus(404);
                 kid.round = save.round
+                kid.time = 0
                 kid.status = "unevaluated"
                 kid.save().then(async () => {
                     // const worker1 = worker_connect.get();
