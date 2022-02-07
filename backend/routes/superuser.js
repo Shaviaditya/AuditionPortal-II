@@ -451,7 +451,11 @@ module.exports = (app, passport) => {
           ]
         }
       })
-      res.send(data)
+      let arr = []
+      await Promise.all(data.map( async (d => {
+         return arr.push(d.username)
+      })))
+      res.send(arr)
     } else {
       res.sendStatus(404)
     }
