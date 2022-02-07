@@ -26,7 +26,7 @@ module.exports = (app, passport) => {
       details.save();
       console.log(details);
       // const w1 = worker_connect.get();
-      if ((await eventlogger(req.user,`changed the role for ${details.username} to ${role}`))
+      if ((await eventlogger(req.user, `changed the role for ${details.username} to ${role}`))
       )
         res.sendStatus(201).json({ success: "true" });
       else res.sendStatus(500).json({ success: "false" });
@@ -139,9 +139,9 @@ module.exports = (app, passport) => {
                 var mutabledoc = document;
                 mutabledoc.forEach(async (kid) => {
                   if (kid.role === "s") {
-                    if (kid.time < new Date().getTime()){
+                    if (kid.time < new Date().getTime()) {
                       kid.time = new Date().getTime() + 600000 + 2000;
-                    } else { 
+                    } else {
                       kid.time = Number(kid.time) + 600000;
                     }
                     console.log(kid);
@@ -163,10 +163,10 @@ module.exports = (app, passport) => {
             });
         } else {
           const kidItem = await users.findOne({ where: { uuid: req.body.uuid } });
-          if (kidItem.time < new Date().getTime()){
+          if (kidItem.time < new Date().getTime()) {
             kidItem.time = new Date().getTime() + 600000 + 2000;
           }
-          else { 
+          else {
             kidItem.time = Number(kidItem.time) + 600000;
           }
           kidItem.save().then(async () => {
@@ -188,51 +188,54 @@ module.exports = (app, passport) => {
 
   app.post("/protected/pushresult", authPass, async (req, res) => {
     if (req.user.role === "su") {
+      let check = true
       let save = JSON.parse(
         fs.readFileSync(
           path.resolve(__dirname + "../../config/auditionConfig.json")
         )
       );
-      var round = save.round;
-      save = JSON.stringify({
-        round: save.round,
-        status: "res",
+      var round = save.round
+      userdoc.forEach(async (user) => {
+        if (user.role === "s" && user.status === "unevaluated" && user.round === save.round) {
+          check = !check;
+          return res.sendStatus(200).json({ "status": false });
+        }
       });
-      var csvobject = [];
-      var rejected = "";
-      await fs.promises.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"),save);
-      await users.findAll().then(async (userdoc) => {
-        fs.closeSync(
-          fs.openSync(
-            path.resolve(__dirname + `../../result/Result_${round}.csv`),
-            "w"
-          )
-        );
-        let check = true 
-        userdoc.forEach(async (user) => {
-          if (user.role === "su" || user.role === "m") {
-            user.status = "unevaluated";
-            user.round += 1;
-            user.time = 0;
-            user.save();
-          } else if (user.role === "s") {
-            if (user.status === "unevaluated") {
-              check = false;
-              return res.sendStatus(400);
-            } else {
-              if (user.status === "rejected" && user.round === Number(round)) {
-                rejected += user.email + ",";
-              } else if (user.status === "selected" && user.round === Number(round)) {
-                csvobject.push(user);
-                user.status = "unevaluated";
-                user.round += 1;
-                user.time = 0;
-                user.save();
+      if (check === true) {
+        save = JSON.stringify({
+          round: save.round,
+          status: "res",
+        });
+        var csvobject = [];
+        var rejected = "";
+        await fs.promises.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"), save);
+        await users.findAll().then(async (userdoc) => {
+          fs.closeSync(
+            fs.openSync(
+              path.resolve(__dirname + `../../result/Result_${round}.csv`),
+              "w"
+            )
+          );
+          userdoc.forEach(async (user) => {
+            if (user.role === "su" || user.role === "m") {
+              user.status = "unevaluated";
+              user.round += 1;
+              user.time = 0;
+              user.save();
+            } else if (user.role === "s") {
+              {
+                if (user.status === "rejected" && user.round === Number(round)) {
+                  rejected += user.email + ",";
+                } else if (user.status === "selected" && user.round === Number(round)) {
+                  csvobject.push(user);
+                  user.status = "unevaluated";
+                  user.round += 1;
+                  user.time = 0;
+                  user.save();
+                }
               }
             }
-          }
-        });
-        if(check===true){
+          })
           let csvWriter = createCsvWriter({
             path: path.resolve(__dirname + `../../result/Result_${round}.csv`),
             header: [
@@ -298,42 +301,42 @@ module.exports = (app, passport) => {
                 };
                 worker.postMessage(maildata);
               });
-            });      
-          if (await eventlogger(req.user,`Result pushed for round ${round}`)) {
-            res.sendStatus(201);
+            });
+          if (await eventlogger(req.user, `Result pushed for round ${round}`)) {
+            res.sendStatus(201).json({ "status": true });
           } else {
-            res.sendStatus(500);
+            res.sendStatus(500).json({ "status": false });
           }
-        } else {
-           res.sendStatus(400)
-        }
-      });
+        })
+      } else {
+        res.sendStatus(200).json({ "status": false });
+      }
     } else {
       res.sendStatus(401);
     }
   });
 
-  app.post("/profile",authPass,async(req,res) => {
+  app.post("/profile", authPass, async (req, res) => {
     await users.findOne({
-      where:{
-        uuid:req.user.uuid
+      where: {
+        uuid: req.user.uuid
       }
     }).then((doc) => {
-      if(doc){
+      if (doc) {
         doc.roll = req.body.roll,
-        doc.phone = req.body.phone,
-        doc.profilebool = true
+          doc.phone = req.body.phone,
+          doc.profilebool = true
         doc.save()
         res.sendStatus(202)
       } else {
         res.sendStatus(404)
       }
-    }) 
+    })
   })
 
   app.get("/profile", authPass, async (req, res) => {
     // if (req.user.role === "s") {
-      
+
     // }
     await users.findOne({ where: { uuid: req.user.uuid } }).then((doc) => {
       res.status(200).json({
@@ -406,7 +409,7 @@ module.exports = (app, passport) => {
   });
 
   app.get("/datadump", authPass, async (req, res) => {
-    if(req.user.role==="su"){
+    if (req.user.role === "su") {
       await users.findAll().then((doc) => {
         fs.closeSync(
           fs.openSync(path.resolve(__dirname + `../../data.csv`), "w")
@@ -432,18 +435,19 @@ module.exports = (app, passport) => {
       res.sendStatus(401)
     }
   })
-  app.get('/result',authPass,async(req,res) => {
+  app.get('/result', authPass, async (req, res) => {
     let save = JSON.parse(
       fs.readFileSync(
         path.resolve(__dirname + "../../config/auditionConfig.json")
       )
     );
-    if(save.status==="res" && save.round>0){
+    if (save.status === "res" && save.round > 0) {
       const data = await users.findAll({
-        where:{
-          [Op.and]:[
-            {status:"unevaluated"},
-            {round: save.round+1}
+        where: {
+          [Op.and]: [
+            { status: "unevaluated" },
+            { round: save.round + 1 },
+            { role: "s" }
           ]
         }
       })
@@ -453,10 +457,25 @@ module.exports = (app, passport) => {
     }
   })
   // Beta Testing Route
-  app.put("/timereset", authPass, async(req,res) => {
-    if(req.user.role === "su"){
+  app.put("/timereset", authPass, async (req, res) => {
+    if (req.user.role === "su") {
+      let save = JSON.parse(
+        fs.readFileSync(
+          path.resolve(__dirname + "../../config/auditionConfig.json")
+        )
+      );
+      save = JSON.stringify({
+        round: 0,
+        status: "res",
+      });
+      await question_answered_model.findAll().then((doc) => {
+        doc.forEach(async (ans) => {
+          await ans.destroy();
+        })
+      });
+      await fs.promises.writeFile(path.resolve(__dirname + "../../config/auditionConfig.json"), save);
       await users.findAll().then((doc) => {
-        doc.forEach((user)=>{
+        doc.forEach((user) => {
           user.round = 1;
           user.time = 0;
           user.status = "unevaluated";

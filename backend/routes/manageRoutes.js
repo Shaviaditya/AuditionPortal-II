@@ -90,7 +90,7 @@ module.exports = (app, passport) => {
             var a = req.body;
             if (
                 req.user.role === "su" ||
-                (req.user.role === "m" && req.user.clearance >= a.round)
+                (req.user.role === "m")
             ) {
                 const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 entry.status = a.status
