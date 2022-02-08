@@ -195,12 +195,13 @@ module.exports = (app, passport) => {
         )
       );
       var round = save.round
-      userdoc.forEach(async (user) => {
-        if (user.role === "s" && user.status === "unevaluated" && user.round === save.round) {
-          check = !check;
-          return res.sendStatus(200).json({ "status": false });
-        }
-      });
+      await users.findAll().then((userdoc) => {
+        userdoc.forEach(async (user) => {
+          if (user.role === "s" && user.status === "unevaluated" && user.round === save.round) {
+            check = false;
+          }
+        });
+      })
       if (check === true) {
         save = JSON.stringify({
           round: save.round,
@@ -452,7 +453,7 @@ module.exports = (app, passport) => {
         }
       })
       let arr = []
-      await Promise.all(data.map( async (d => {
+      await Promise.all(data.map((d => {
          return arr.push(d.username)
       })))
       res.send(arr)
