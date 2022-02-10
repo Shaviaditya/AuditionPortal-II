@@ -5,6 +5,7 @@ const path = require("path");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const { Op } = require("sequelize");
 const { eventlogger } = require("./eventLogger");
+const { sendMail } = require("../services/reportSender")
 const { isMainThread, Worker } = require("worker_threads");
 require("dotenv").config();
 const {
@@ -316,7 +317,63 @@ module.exports = (app, passport) => {
       res.sendStatus(401);
     }
   });
+  app.post('/pushmails', authPass, async (req, res) => {
+    let save = JSON.parse(
+      fs.readFileSync(
+        path.resolve(__dirname + "../../config/auditionConfig.json")
+      )
+    );
+    if ((req.user.role === "su" || req.user.role === "m") && save.status === "res") {
+      const data = await users.findAll({
+        where: {
+          role: "s"
+        }
+      })
+      /* let worker;
+      if (isMainThread) {
+        worker = new Worker(
+          path.resolve(__dirname + "../../services/reportSender.js")
+        );
+        worker.on("message", (data) => {
+          console.log("Done", data);
+        });
+        worker.on("error", (data) => {
+          console.log("Error", data);
+        });
+        worker.on("exit", (data) => {
+          console.log("Exit", data);
+        });
+      } */
+      let sub = "Reminder GLUG Auditions"
+        let body = `Hello there!
 
+        It is to remind you that the GLUG Audition goes live at 7 PM today. If you have not registered yet, then head over to <Link> and do so.
+        
+        Join our Whatsapp All in Group here: <Link> if you haven't joined yet.
+        
+        Do not hesitate. Join us and be a part of this amazing community of Linux and Open Source Development enthusiasts.
+        
+        May The Source Be With You!🐧❤️
+        
+        Thanking You,
+        Your's Sincerely,
+        GNU/Linux Users' Group, NIT Durgapur.`
+      let mails = "";
+        data.forEach((val) => {
+           sendMail(sub,body,val.email)
+        })
+        /* mails = mails.slice(0, -1);
+        let post = mails;
+        const dataval = {
+          subject: sub,
+          text: body,
+          list: post,
+        };
+        worker.postMessage(dataval); */
+    } else {
+      res.sendStatus(401)
+    }
+  })
   app.post("/profile", authPass, async (req, res) => {
     await users.findOne({
       where: {
@@ -454,7 +511,7 @@ module.exports = (app, passport) => {
       })
       let arr = []
       await Promise.all(data.map((d => {
-         return arr.push(d.username)
+        return arr.push(d.username)
       })))
       res.send(arr)
     } else {
@@ -508,6 +565,25 @@ module.exports = (app, passport) => {
         });
     }
   });
+  app.get("/getcount",authPass, async(req,res) => {
+    if(req.user.role==="su" || req.user.role==="m")
+    {
+      let count = 0;
+      const data = await users.findAll({
+        where:{
+          role: 's'
+        }
+      })
+      data.forEach(val => {
+        if(val.time!=0){
+          count+=1;
+        }
+      })
+      res.send(data)
+    } else {
+      res.sendStatus(401)
+    }
+  })
   app.put("/reject/:id", authPass, async (req, res) => {
     let id = req.params.id;
     if (req.user.role === "su") {

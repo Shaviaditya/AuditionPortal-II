@@ -126,7 +126,7 @@ module.exports = (app, passport) => {
       // res.cookie("jwt", token);
       if (req.user.mode === "google")
         res.redirect(`${process.env.FRONTEND}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND}register?error=email`);
+      else res.redirect(`${process.env.FRONTEND}?error=email`);
       // res.status(201).json({
       //     success: true,
       //     token: "Bearer " + token,
@@ -153,7 +153,7 @@ module.exports = (app, passport) => {
       // res.cookie("jwt", token);
       if (req.user.mode === "github")
         res.redirect(`${process.env.FRONTEND}?token=${token}`);
-      else res.redirect(`${process.env.FRONTEND}register?error=email`);
+      else res.redirect(`${process.env.FRONTEND}?error=email`);
     //   res.status(201).json({
     //     success: true,
     //     token: "Bearer " + token,
