@@ -99,10 +99,10 @@ module.exports = (app, passport) => {
                     if (await eventlogger(req.user, `Changed selection status for ${a.username} to ${a.status}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
-                        res.sendStatus(500).json({ success: "false" });
+                        res.status(500).json({ success: "false" });
                 })
             } else {
-                return res.sendStatus(401).json({ success: "failed" });;
+                return res.status(401).json({ success: "failed" });;
             }
         }
     );
@@ -112,7 +112,7 @@ module.exports = (app, passport) => {
         authPass,
         async (req, res) => {
             if (req.user.role === "su" || (req.user.role === "m")) {
-                const entry = await users.findOne({ where: { uuid: req.body.uuid } })
+                /* const entry = await users.findOne({ where: { uuid: req.body.uuid } })
                 if (entry.feedback === null) {
                     let arr = []
                     let obj = {
@@ -141,10 +141,31 @@ module.exports = (app, passport) => {
                     if (await eventlogger(req.user, `Added feedback for ${req.body.username}`))
                         return res.status(202).json({ message: "Changes have been saved" });
                     else
-                        res.sendStatus(500).json({ success: "false" });
-                })
+                        res.status(500).json({ success: "false" });
+                }) */
+                let obj = {
+                    username: req.body.username,
+                    feedback: req.body.feedback,
+                    round: req.body.round,
+                };
+                obj = JSON.stringify(obj)
+                await users.update(
+                    {'feedback':sequelize.fn('array_append',sequelize.col('feedback'),obj)},
+                    {where: { uuid: req.body.uuid }}).then(async () => {
+                    // const w2 = worker_connect.get();
+                    if (
+                        await eventlogger(
+                            req.user,
+                            `Added feedback for ${req.body.username}`
+                        )
+                    )
+                        return res
+                            .status(202)
+                            .json({ message: "Changes have been saved" });
+                    else res.status(500).json({ success: "false" });
+                });
             } else {
-                return res.sendStatus(401).json({ success: "failed" });
+                return res.status(401).json({ success: "failed" });
             }
         }
     );

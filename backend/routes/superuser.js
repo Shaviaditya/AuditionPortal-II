@@ -29,10 +29,10 @@ module.exports = (app, passport) => {
       // const w1 = worker_connect.get();
       if ((await eventlogger(req.user, `changed the role for ${details.username} to ${role}`))
       )
-        res.sendStatus(201).json({ success: "true" });
-      else res.sendStatus(500).json({ success: "false" });
+        res.status(201).json({ success: "true" });
+      else res.status(500).json({ success: "false" });
     } else {
-      res.sendStatus(401).json({ success: "failed" });
+      res.status(401).json({ success: "failed" });
     }
   });
 
@@ -50,10 +50,10 @@ module.exports = (app, passport) => {
           `Set Clearance for ${details.username} to ${clearance}`
         ))
       )
-        res.sendStatus(201).json({ success: "true" });
-      else res.sendStatus(500).json({ success: "false" });
+        res.status(201).json({ success: "true" });
+      else res.status(500).json({ success: "false" });
     } else {
-      res.sendStatus(401).json({ success: "failed" });
+      res.status(401).json({ success: "failed" });
     }
   });
 
@@ -227,7 +227,7 @@ module.exports = (app, passport) => {
             } else if (user.role === "s") {
               {
                 if (user.status === "rejected" && user.round === Number(round)) {
-                  rejected += user.email + ",";
+                  csvobject.push(user);
                 } else if (user.status === "selected" && user.round === Number(round)) {
                   csvobject.push(user);
                   user.status = "unevaluated";
@@ -244,12 +244,13 @@ module.exports = (app, passport) => {
               { id: "username", title: "Name" },
               { id: "email", title: "Email" },
               { id: "phone", title: "Phone" },
+              { id: "status", title: "Status" },
             ],
           });
           csvWriter
             .writeRecords(csvobject)
             .then(() => console.log("The CSV file was written successfully"));
-          const rejectedones = rejected.slice(0, -1);
+          /* const rejectedones = rejected.slice(0, -1);
           let worker;
           if (isMainThread) {
             worker = new Worker(
@@ -303,15 +304,15 @@ module.exports = (app, passport) => {
                 };
                 worker.postMessage(maildata);
               });
-            });
+            }) */;
           if (await eventlogger(req.user, `Result pushed for round ${round}`)) {
-            res.sendStatus(201).json({ "status": true });
+            res.status(201).json({ "status": true });
           } else {
-            res.sendStatus(500).json({ "status": false });
+            res.status(500).json({ "status": false });
           }
         })
       } else {
-        res.sendStatus(200).json({ "status": false });
+        res.status(200).json({ "status": false });
       }
     } else {
       res.sendStatus(401);

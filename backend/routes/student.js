@@ -53,7 +53,7 @@ module.exports = (app, passport) => {
                         }
                 })
             })
-            res.sendStatus(200).json({"Changes":"Applied!"})
+            res.status(200).json({"Changes":"Applied!"})
         } else {
             res.sendStatus(401);
         }
@@ -119,7 +119,7 @@ module.exports = (app, passport) => {
                                         answer: answer,
                                         ansLink: ansLink,
                                     }).then((ans) => {
-                                        res.sendStatus(201).json(JSON.stringify(ans));
+                                        res.status(201).json(JSON.stringify(ans));
                                     })
                                 } else {
                                     // Updates the answer he will give.

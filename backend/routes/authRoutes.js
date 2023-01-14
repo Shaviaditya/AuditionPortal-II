@@ -15,7 +15,7 @@ module.exports = (app, passport) => {
   app.post("/auth/signup", async (req, res) => {
     const { username, email, password, role, phone } = req.body;
     if (role === "su") {
-      return res.sendStatus(403).json({ success: false });
+      return res.status(403).json({ success: false });
     } else {
       await users
         .create({ username, email, password, role, phone })
@@ -28,7 +28,7 @@ module.exports = (app, passport) => {
               });
             } else {
               return res
-                .sendStatus(201)
+                .status(201)
                 .json({ success: true, message: "User is registered.." });
             }
           });

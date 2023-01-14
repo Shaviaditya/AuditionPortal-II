@@ -194,9 +194,9 @@ module.exports = (app, passport) => {
             }
           });
       });
-      res.sendStatus(200).json({ "Question Edited": "Done" });
+      res.status(200).json({ "Question Edited": "Done" });
     } else {
-      res.sendStatus(401).json({ Access: "Unauthorized" });
+      res.status(401).json({ Access: "Unauthorized" });
     }
   });
 
@@ -211,7 +211,7 @@ module.exports = (app, passport) => {
           },
         });
         question.destroy();
-        res.sendStatus(200).json({ delete: true });
+        res.status(200).json({ delete: true });
     } else {
       res.sendStatus(401)
     }
