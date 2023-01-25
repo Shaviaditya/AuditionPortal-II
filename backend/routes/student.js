@@ -128,8 +128,8 @@ module.exports = (app, passport) => {
                                         check.answer = answer,
                                         check.ansLink = ansLink
                                     check.save();
+				    res.sendStatus(201)	
                                 }
-                                res.sendStatus(201)
                             })
                         }
                     })
